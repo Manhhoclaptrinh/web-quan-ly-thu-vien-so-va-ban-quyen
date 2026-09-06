@@ -1,0 +1,8 @@
+package vn.edu.eaut.library.dao;
+import vn.edu.eaut.library.model.AuditLog; import vn.edu.eaut.library.utils.DBConnection;
+import java.sql.*; import java.util.*;
+public class AuditLogDAO {
+ public boolean insert(int userId,String action,String targetType,Integer targetId,String description,String ip){String s="INSERT INTO audit_logs(user_id,action_type,target_type,target_id,description,ip_address) VALUES(?,?,?,?,?,?)";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s)){p.setInt(1,userId);p.setString(2,action);p.setString(3,targetType);if(targetId==null)p.setNull(4,Types.INTEGER);else p.setInt(4,targetId);p.setString(5,description);p.setString(6,ip);return p.executeUpdate()>0;}catch(SQLException e){throw new RuntimeException("Lỗi ghi audit log",e);}}
+ public List<AuditLog> findAll(){List<AuditLog> l=new ArrayList<>();String s="SELECT a.*,u.username FROM audit_logs a JOIN users u ON a.user_id=u.user_id ORDER BY a.created_at DESC LIMIT 200";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s);ResultSet r=p.executeQuery()){while(r.next())l.add(map(r));}catch(SQLException e){throw new RuntimeException("Lỗi lấy audit log",e);}return l;}
+ private AuditLog map(ResultSet r)throws SQLException{AuditLog a=new AuditLog();a.setAuditId(r.getInt("audit_id"));a.setUserId(r.getInt("user_id"));a.setUsername(r.getString("username"));a.setActionType(r.getString("action_type"));a.setTargetType(r.getString("target_type"));int id=r.getInt("target_id");a.setTargetId(r.wasNull()?null:id);a.setDescription(r.getString("description"));a.setIpAddress(r.getString("ip_address"));Timestamp t=r.getTimestamp("created_at");if(t!=null)a.setCreatedAt(t.toLocalDateTime());return a;}
+}
