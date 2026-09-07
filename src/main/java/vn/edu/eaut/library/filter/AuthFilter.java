@@ -19,7 +19,7 @@ public class AuthFilter implements Filter {
 
     // Các đường dẫn không cần đăng nhập
     private static final String[] PUBLIC_PATHS = {
-            "/login", "/css/", "/views/login.jsp"
+            "/login", "/css/","/js/", "/views/login.jsp","/views/errors/"
     };
 
     // Các đường dẫn chỉ ADMIN/LIBRARIAN được truy cập
