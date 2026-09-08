@@ -24,7 +24,7 @@ public class AuthFilter implements Filter {
 
     // Các đường dẫn chỉ ADMIN/LIBRARIAN được truy cập
     private static final String[] STAFF_ONLY_PATHS = {
-            "/license", "/permission", "/categories"
+            "/license", "/permission", "/categories", "/video-license"
     };
 
     private static final String[] ADMIN_ONLY_PATHS = { "/users", "/audit-logs" };
@@ -83,7 +83,6 @@ public class AuthFilter implements Filter {
     private boolean isStaffOnlyPath(String path) {
         for (String p : STAFF_ONLY_PATHS) {
             // Phải khớp chính xác hoặc là sub-path.
-            // Tránh lỗi "/permission" vô tình chặn "/permission-request".
             if (path.equals(p) || path.startsWith(p + "/")) {
                 return true;
             }
