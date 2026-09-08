@@ -104,9 +104,6 @@ INSERT INTO permissions (user_id, document_id, permission_type, granted_by) VALU
 (3, 1, 'DOWNLOAD', 1),
 (3, 2, 'VIEW', 2);
 
--- =============================================
--- BỔ SUNG ƯU TIÊN 1: YÊU CẦU CẤP QUYỀN
--- =============================================
 CREATE TABLE permission_requests (
     request_id       INT AUTO_INCREMENT PRIMARY KEY,
     user_id          INT NOT NULL,
@@ -126,9 +123,6 @@ CREATE TABLE permission_requests (
     INDEX idx_req_document (document_id)
 );
 
--- =============================================
--- BỔ SUNG ƯU TIÊN 3: YÊU THÍCH / ĐÁNH GIÁ / THÔNG BÁO / AUDIT
--- =============================================
 CREATE TABLE favorites (
     favorite_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -181,3 +175,112 @@ CREATE TABLE audit_logs (
     INDEX idx_audit_user (user_id),
     INDEX idx_audit_action (action_type)
 );
+
+CREATE TABLE videos (
+    video_id      INT AUTO_INCREMENT PRIMARY KEY,
+    title         VARCHAR(255) NOT NULL,
+    author        VARCHAR(150),
+    category_id   INT,
+    file_path     VARCHAR(255) NOT NULL,      -- đường dẫn file video lưu trên server
+    duration_seconds INT,                     -- thời lượng video (giây), có thể null nếu chưa xác định
+    thumbnail_path VARCHAR(255),              -- ảnh đại diện (tùy chọn)
+    description   TEXT,
+    upload_date   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    uploaded_by   INT,
+    access_level  ENUM('PUBLIC','RESTRICTED','PRIVATE') NOT NULL DEFAULT 'PUBLIC',
+    status        ENUM('AVAILABLE','DISABLED') NOT NULL DEFAULT 'AVAILABLE',
+    CONSTRAINT fk_video_category FOREIGN KEY (category_id) REFERENCES categories(category_id)
+        ON DELETE SET NULL,
+    CONSTRAINT fk_video_uploader FOREIGN KEY (uploaded_by) REFERENCES users(user_id)
+        ON DELETE SET NULL
+);
+
+CREATE TABLE video_licenses (
+    license_id     INT AUTO_INCREMENT PRIMARY KEY,
+    video_id       INT NOT NULL,
+    license_type   ENUM('FREE','SUBSCRIPTION','PAID','INTERNAL') NOT NULL DEFAULT 'FREE',
+    license_code   VARCHAR(100),
+    issued_date    DATE,
+    expiry_date    DATE,
+    terms          TEXT,
+    status         ENUM('VALID','EXPIRED','REVOKED') NOT NULL DEFAULT 'VALID',
+    CONSTRAINT fk_vlicense_video FOREIGN KEY (video_id) REFERENCES videos(video_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE video_permissions (
+    permission_id  INT AUTO_INCREMENT PRIMARY KEY,
+    user_id        INT NOT NULL,
+    video_id       INT NOT NULL,
+    permission_type ENUM('VIEW','DOWNLOAD','EDIT') NOT NULL DEFAULT 'VIEW',
+    granted_by     INT,
+    granted_date   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expiry_date    DATETIME NULL,
+    CONSTRAINT fk_vperm_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_vperm_video FOREIGN KEY (video_id) REFERENCES videos(video_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_vperm_grantor FOREIGN KEY (granted_by) REFERENCES users(user_id)
+        ON DELETE SET NULL,
+    UNIQUE KEY uq_user_video_perm (user_id, video_id, permission_type)
+);
+
+CREATE TABLE video_permission_requests (
+    request_id       INT AUTO_INCREMENT PRIMARY KEY,
+    user_id          INT NOT NULL,
+    video_id         INT NOT NULL,
+    permission_type  ENUM('VIEW','DOWNLOAD') NOT NULL DEFAULT 'VIEW',
+    reason           VARCHAR(500),
+    status           ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
+    requested_date   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    processed_date   DATETIME NULL,
+    processed_by     INT NULL,
+    expiry_date      DATETIME NULL,
+    CONSTRAINT fk_vreq_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_vreq_video FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
+    CONSTRAINT fk_vreq_processor FOREIGN KEY (processed_by) REFERENCES users(user_id) ON DELETE SET NULL,
+    INDEX idx_vreq_status (status),
+    INDEX idx_vreq_user (user_id),
+    INDEX idx_vreq_video (video_id)
+);
+
+ALTER TABLE access_history
+    ADD COLUMN target_type ENUM('DOCUMENT','VIDEO') NOT NULL DEFAULT 'DOCUMENT' AFTER document_id,
+    ADD COLUMN video_id INT NULL AFTER target_type,
+    ADD CONSTRAINT fk_hist_video FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE;
+
+-- document_id đang NOT NULL trong schema gốc -> nới lỏng để cho phép ghi log VIDEO
+ALTER TABLE access_history
+    MODIFY COLUMN document_id INT NULL;
+
+ALTER TABLE favorites
+    ADD COLUMN item_type ENUM('DOCUMENT','VIDEO') NOT NULL DEFAULT 'DOCUMENT' AFTER user_id,
+    ADD COLUMN video_id INT NULL AFTER document_id,
+    ADD CONSTRAINT fk_fav_video FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
+    ADD UNIQUE KEY uq_favorite_user_video (user_id, video_id);
+
+ALTER TABLE favorites
+    MODIFY COLUMN document_id INT NULL;
+
+CREATE TABLE video_reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    video_id INT NOT NULL,
+    rating TINYINT NOT NULL,
+    comment VARCHAR(1000),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_vreview_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_vreview_video FOREIGN KEY (video_id) REFERENCES videos(video_id) ON DELETE CASCADE,
+    UNIQUE KEY uq_review_user_video (user_id, video_id),
+    CONSTRAINT chk_vreview_rating CHECK (rating BETWEEN 1 AND 5),
+    INDEX idx_vreview_video (video_id)
+);
+
+INSERT INTO videos (title, author, category_id, file_path, description, uploaded_by, access_level) VALUES
+('Video hướng dẫn Java cơ bản', 'Nguyễn Văn B', 1, '/WEB-INF/uploads/videos/sample-java.mp4', 'Video bài giảng nhập môn Java', 1, 'PUBLIC'),
+('Video PTTK hệ thống (nội bộ)', 'Trần Thị C', 1, '/WEB-INF/uploads/videos/sample-pttk.mp4', 'Video bài giảng PTTK hệ thống, lưu hành nội bộ', 1, 'RESTRICTED');
+
+INSERT INTO video_licenses (video_id, license_type, license_code, issued_date, expiry_date, terms) VALUES
+(1, 'FREE', 'VLIC-0001', '2025-01-01', NULL, 'Được phép sử dụng miễn phí cho mục đích học tập'),
+(2, 'INTERNAL', 'VLIC-0002', '2025-01-01', '2026-12-31', 'Chỉ lưu hành nội bộ trường EAUT');
