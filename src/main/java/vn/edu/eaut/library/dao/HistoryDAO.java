@@ -1,19 +1,26 @@
 package vn.edu.eaut.library.dao;
 
-import vn.edu.eaut.library.model.AccessHistory;
-import vn.edu.eaut.library.utils.DBConnection;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
+import vn.edu.eaut.library.model.AccessHistory;
+import vn.edu.eaut.library.utils.DBConnection;
 
 public class HistoryDAO {
 
     private static final String BASE_SELECT =
-            "SELECT h.*, u.username, d.title AS document_title " +
+            "SELECT h.*, u.username, d.title AS document_title, v.title AS video_title " +
             "FROM access_history h " +
             "LEFT JOIN users u ON h.user_id = u.user_id " +
-            "LEFT JOIN documents d ON h.document_id = d.document_id ";
+            "LEFT JOIN documents d ON h.document_id = d.document_id " +
+            "LEFT JOIN videos v ON h.video_id = v.video_id ";
 
     public List<AccessHistory> findAll() {
         List<AccessHistory> list = new ArrayList<>();
@@ -79,7 +86,8 @@ public class HistoryDAO {
     }
 
     public boolean insert(AccessHistory history) {
-        String sql = "INSERT INTO access_history (user_id, document_id, action_type, ip_address) VALUES (?,?,?,?)";
+        String targetType = history.getTargetType() != null ? history.getTargetType() : "DOCUMENT";
+        String sql = "INSERT INTO access_history (user_id, document_id, target_type, video_id, action_type, ip_address) VALUES (?,?,?,?,?,?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, history.getUserId());
@@ -88,12 +96,35 @@ public class HistoryDAO {
             } else {
                 ps.setNull(2, Types.INTEGER);
             }
-            ps.setString(3, history.getActionType());
-            ps.setString(4, history.getIpAddress());
+            ps.setString(3, targetType);
+            if (history.getVideoId() != null) {
+                ps.setInt(4, history.getVideoId());
+            } else {
+                ps.setNull(4, Types.INTEGER);
+            }
+            ps.setString(5, history.getActionType());
+            ps.setString(6, history.getIpAddress());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi khi ghi lịch sử truy cập", e);
         }
+    }
+
+    public List<AccessHistory> findByVideoId(int videoId) {
+        List<AccessHistory> list = new ArrayList<>();
+        String sql = BASE_SELECT + "WHERE h.video_id = ? ORDER BY h.access_time DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, videoId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi lấy lịch sử truy cập theo video", e);
+        }
+        return list;
     }
 
     private AccessHistory mapRow(ResultSet rs) throws SQLException {
@@ -104,6 +135,10 @@ public class HistoryDAO {
         int docId = rs.getInt("document_id");
         h.setDocumentId(rs.wasNull() ? null : docId);
         h.setDocumentTitle(rs.getString("document_title"));
+        h.setTargetType(rs.getString("target_type"));
+        int vidId = rs.getInt("video_id");
+        h.setVideoId(rs.wasNull() ? null : vidId);
+        h.setVideoTitle(rs.getString("video_title"));
         h.setActionType(rs.getString("action_type"));
         Timestamp ts = rs.getTimestamp("access_time");
         if (ts != null) {
