@@ -12,8 +12,11 @@ import vn.edu.eaut.library.dao.DashboardDAO;
 import vn.edu.eaut.library.dao.DocumentDAO;
 import vn.edu.eaut.library.dao.HistoryDAO;
 import vn.edu.eaut.library.dao.LicenseDAO;
+import vn.edu.eaut.library.dao.VideoDAO;
+import vn.edu.eaut.library.dao.VideoLicenseDAO;
 import vn.edu.eaut.library.model.AccessHistory;
 import vn.edu.eaut.library.model.Document;
+import vn.edu.eaut.library.model.Video;
 
 @WebServlet("/home")
 public class HomeServlet extends HttpServlet {
@@ -22,12 +25,15 @@ public class HomeServlet extends HttpServlet {
     private final DashboardDAO dashboardDAO = new DashboardDAO();
     private final HistoryDAO historyDAO = new HistoryDAO();
     private final LicenseDAO licenseDAO = new LicenseDAO();
+    private final VideoDAO videoDAO = new VideoDAO();
+    private final VideoLicenseDAO videoLicenseDAO = new VideoLicenseDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
         licenseDAO.markExpiredLicenses();
+        videoLicenseDAO.markExpiredLicenses();
 
         // KPI cards
         req.setAttribute("totalDocuments", dashboardDAO.countDocuments());
@@ -39,6 +45,9 @@ public class HomeServlet extends HttpServlet {
         req.setAttribute("validLicenses", dashboardDAO.countValidLicenses());
         req.setAttribute("totalDownloads", dashboardDAO.countDownloads());
         req.setAttribute("totalViews", dashboardDAO.countViews());
+        req.setAttribute("totalVideos", dashboardDAO.countVideos());
+        req.setAttribute("availableVideos", dashboardDAO.countAvailableVideos());
+        req.setAttribute("validVideoLicenses", dashboardDAO.countValidVideoLicenses());
         vn.edu.eaut.library.model.User current = (vn.edu.eaut.library.model.User) req.getSession().getAttribute("currentUser");
         if (current != null) req.setAttribute("unreadNotifications", new vn.edu.eaut.library.dao.NotificationDAO().countUnread(current.getUserId()));
         req.setAttribute("documentsByCategory", dashboardDAO.documentsByCategory());
@@ -50,6 +59,12 @@ public class HomeServlet extends HttpServlet {
             recentDocuments = recentDocuments.subList(0, 6);
         }
         req.setAttribute("recentDocuments", recentDocuments);
+
+        List<Video> recentVideos = videoDAO.findAll();
+        if (recentVideos.size() > 6) {
+            recentVideos = recentVideos.subList(0, 6);
+        }
+        req.setAttribute("recentVideos", recentVideos);
 
         List<AccessHistory> recentActivities;
         Object currentUser = req.getSession().getAttribute("currentUser");
