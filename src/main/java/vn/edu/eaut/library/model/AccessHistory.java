@@ -8,8 +8,11 @@ public class AccessHistory implements Serializable {
     private int historyId;
     private int userId;
     private String username;       // dùng khi JOIN để hiển thị
-    private Integer documentId;    // null nếu hành động không gắn tài liệu (LOGIN/LOGOUT)
+    private Integer documentId;    // null nếu hành động không gắn tài liệu (LOGIN/LOGOUT) hoặc gắn video
     private String documentTitle;  // dùng khi JOIN để hiển thị
+    private String targetType;     // DOCUMENT, VIDEO
+    private Integer videoId;       // null nếu hành động gắn tài liệu hoặc không gắn gì
+    private String videoTitle;     // dùng khi JOIN để hiển thị
     private String actionType;     // VIEW, DOWNLOAD, LOGIN, LOGOUT
     private LocalDateTime accessTime;
     private String ipAddress;
@@ -65,6 +68,30 @@ public class AccessHistory implements Serializable {
 
     public void setDocumentTitle(String documentTitle) {
         this.documentTitle = documentTitle;
+    }
+
+    public String getTargetType() {
+        return targetType;
+    }
+
+    public void setTargetType(String targetType) {
+        this.targetType = targetType;
+    }
+
+    public Integer getVideoId() {
+        return videoId;
+    }
+
+    public void setVideoId(Integer videoId) {
+        this.videoId = videoId;
+    }
+
+    public String getVideoTitle() {
+        return videoTitle;
+    }
+
+    public void setVideoTitle(String videoTitle) {
+        this.videoTitle = videoTitle;
     }
 
     public String getActionType() {
