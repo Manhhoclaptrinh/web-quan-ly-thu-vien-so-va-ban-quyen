@@ -33,6 +33,10 @@
             <div><div class="stat-label">Tổng tài liệu</div><div class="stat-value">${totalDocuments}</div><div class="stat-note">${availableDocuments} đang khả dụng</div></div>
         </div>
         <div class="stat-card">
+            <div class="stat-icon">🎬</div>
+            <div><div class="stat-label">Tổng video</div><div class="stat-value">${totalVideos}</div><div class="stat-note">${availableVideos} đang khả dụng</div></div>
+        </div>
+        <div class="stat-card">
             <div class="stat-icon">🗂️</div>
             <div><div class="stat-label">Danh mục</div><div class="stat-value">${totalCategories}</div><div class="stat-note">Phân loại tài liệu</div></div>
         </div>
@@ -47,7 +51,8 @@
     </section>
 
     <section class="stats-grid stats-grid-small">
-        <div class="mini-stat"><span>©️ Bản quyền hợp lệ</span><strong>${validLicenses}</strong></div>
+        <div class="mini-stat"><span>©️ Bản quyền tài liệu hợp lệ</span><strong>${validLicenses}</strong></div>
+        <div class="mini-stat"><span>©️ Bản quyền video hợp lệ</span><strong>${validVideoLicenses}</strong></div>
         <div class="mini-stat"><span>⬇️ Lượt tải xuống</span><strong>${totalDownloads}</strong></div>
         <div class="mini-stat"><span>👁️ Lượt xem</span><strong>${totalViews}</strong></div>
     </section>
@@ -102,6 +107,34 @@
             </c:choose>
         </section>
     </div>
+
+    <section class="card mt-3">
+        <div class="section-heading">
+            <div><span class="eyebrow">LIBRARY</span><h2>Video mới cập nhật</h2></div>
+            <a href="${pageContext.request.contextPath}/videos" class="btn btn-secondary btn-sm">Xem tất cả</a>
+        </div>
+        <c:choose>
+            <c:when test="${empty recentVideos}"><div class="empty-state">📭<strong>Chưa có video</strong><span>Hệ thống chưa có video nào.</span></div></c:when>
+            <c:otherwise>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Video</th><th>Danh mục</th><th>Quyền</th><th>Trạng thái</th><th></th></tr></thead>
+                        <tbody>
+                        <c:forEach var="v" items="${recentVideos}">
+                            <tr>
+                                <td><div class="doc-title">${v.title}</div><small>${v.author}</small></td>
+                                <td>${v.categoryName}</td>
+                                <td><span class="badge badge-${v.accessLevel == 'PUBLIC' ? 'public' : v.accessLevel == 'RESTRICTED' ? 'restricted' : 'private'}">${v.accessLevel}</span></td>
+                                <td><span class="status-dot ${v.status == 'AVAILABLE' ? 'status-active' : 'status-locked'}"></span>${v.status}</td>
+                                <td><a class="link-arrow" href="${pageContext.request.contextPath}/videos/detail?id=${v.videoId}">Xem →</a></td>
+                            </tr>
+                        </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </section>
 <div class="dashboard-columns mt-3"><section class="card"><div class="section-heading"><div><span class="eyebrow">ANALYTICS</span><h2>Tài liệu theo danh mục</h2></div></div><c:forEach var="entry" items="${documentsByCategory}"><div class="bar-row"><span>${entry.key}</span><div class="bar-track"><div class="bar-fill" style="width:${totalDocuments > 0 ? (entry.value * 100 / totalDocuments) : 0}%"></div></div><strong>${entry.value}</strong></div></c:forEach></section><section class="card"><div class="section-heading"><div><span class="eyebrow">ACTIVITY</span><h2>Hoạt động hệ thống</h2></div></div><c:forEach var="entry" items="${activitySummary}"><div class="bar-row"><span>${entry.key}</span><div class="bar-track"><div class="bar-fill" style="width:${totalViews + totalDownloads > 0 ? (entry.value * 100 / (totalViews + totalDownloads)) : 0}%"></div></div><strong>${entry.value}</strong></div></c:forEach></section></div>
 <section class="card mt-3"><div class="section-heading"><div><span class="eyebrow">POPULAR</span><h2>Tài liệu được truy cập nhiều nhất</h2></div></div><table><thead><tr><th>#</th><th>Tài liệu</th><th>Lượt xem/tải</th></tr></thead><tbody><c:forEach var="item" items="${topDocuments}" varStatus="st"><tr><td>${st.count}</td><td>${item.title}</td><td><strong>${item.total}</strong></td></tr></c:forEach></tbody></table></section>
 </div>
