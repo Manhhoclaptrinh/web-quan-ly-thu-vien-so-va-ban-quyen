@@ -15,6 +15,18 @@ public class DashboardDAO {
         return count("SELECT COUNT(*) FROM documents WHERE status = 'AVAILABLE'");
     }
 
+    public int countVideos() {
+        return count("SELECT COUNT(*) FROM videos");
+    }
+
+    public int countAvailableVideos() {
+        return count("SELECT COUNT(*) FROM videos WHERE status = 'AVAILABLE'");
+    }
+
+    public int countValidVideoLicenses() {
+        return count("SELECT COUNT(*) FROM video_licenses WHERE status = 'VALID' AND (expiry_date IS NULL OR expiry_date >= CURDATE())");
+    }
+
     public int countCategories() {
         return count("SELECT COUNT(*) FROM categories");
     }
@@ -56,7 +68,14 @@ public class DashboardDAO {
     }
     public java.util.List<java.util.Map<String,Object>> topDocuments(int limit) {
         java.util.List<java.util.Map<String,Object>> list=new java.util.ArrayList<>();
-        String sql="SELECT d.title,COUNT(h.history_id) total FROM access_history h JOIN documents d ON h.document_id=d.document_id WHERE h.action_type IN ('VIEW','DOWNLOAD') GROUP BY d.document_id,d.title ORDER BY total DESC LIMIT ?";
+        // Gộp cả tài liệu và video để bảng "Được truy cập nhiều nhất" phản ánh đúng toàn hệ thống.
+        String sql="SELECT title,SUM(total) AS total FROM (" +
+                "SELECT d.title AS title, COUNT(h.history_id) AS total FROM access_history h JOIN documents d ON h.document_id=d.document_id " +
+                "WHERE h.action_type IN ('VIEW','DOWNLOAD') AND (h.target_type IS NULL OR h.target_type='DOCUMENT') GROUP BY d.document_id,d.title " +
+                "UNION ALL " +
+                "SELECT CONCAT(v.title,' (Video)') AS title, COUNT(h.history_id) AS total FROM access_history h JOIN videos v ON h.video_id=v.video_id " +
+                "WHERE h.action_type IN ('VIEW','DOWNLOAD') AND h.target_type='VIDEO' GROUP BY v.video_id,v.title" +
+                ") combined GROUP BY title ORDER BY total DESC LIMIT ?";
         try(Connection conn=DBConnection.getConnection();PreparedStatement ps=conn.prepareStatement(sql)){ps.setInt(1,Math.max(1,Math.min(limit,20)));try(ResultSet rs=ps.executeQuery()){while(rs.next()){java.util.Map<String,Object> m=new java.util.HashMap<>();m.put("title",rs.getString(1));m.put("total",rs.getInt(2));list.add(m);}}}
         catch(SQLException e){throw new RuntimeException("Lỗi thống kê tài liệu phổ biến",e);} return list;
     }
