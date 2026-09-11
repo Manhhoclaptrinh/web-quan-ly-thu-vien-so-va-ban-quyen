@@ -2,16 +2,30 @@ package vn.edu.eaut.library.servlet;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
-import vn.edu.eaut.library.dao.*;
-import vn.edu.eaut.library.model.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import vn.edu.eaut.library.dao.AuditLogDAO;
+import vn.edu.eaut.library.dao.CategoryDAO;
+import vn.edu.eaut.library.dao.DocumentDAO;
+import vn.edu.eaut.library.dao.FavoriteDAO;
+import vn.edu.eaut.library.dao.HistoryDAO;
+import vn.edu.eaut.library.dao.LicenseDAO;
+import vn.edu.eaut.library.dao.PermissionDAO;
+import vn.edu.eaut.library.dao.ReviewDAO;
+import vn.edu.eaut.library.model.AccessHistory;
+import vn.edu.eaut.library.model.Document;
+import vn.edu.eaut.library.model.User;
 
 @WebServlet("/documents/*")
 @MultipartConfig(maxFileSize = 20 * 1024 * 1024, maxRequestSize = 25 * 1024 * 1024)
@@ -109,6 +123,7 @@ public class DocumentServlet extends HttpServlet {
     private boolean canAccess(User u,Document d,String type){
         if(u==null || d==null || !"AVAILABLE".equalsIgnoreCase(d.getStatus())) return false;
         if(u.isAdmin()||u.isLibrarian()) return true;
+        if(u.isAuditor()) return "VIEW".equalsIgnoreCase(type);
         if(!licenseDAO.hasValidLicense(d.getDocumentId())) return false;
         if("PUBLIC".equalsIgnoreCase(d.getAccessLevel())&&"VIEW".equalsIgnoreCase(type)) return true;
         return permissionDAO.hasPermission(u.getUserId(),d.getDocumentId(),type);
