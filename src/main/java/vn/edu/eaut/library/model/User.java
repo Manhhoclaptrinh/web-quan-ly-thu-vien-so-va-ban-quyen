@@ -10,7 +10,7 @@ public class User implements Serializable {
     private String password;
     private String fullName;
     private String email;
-    private String role;      // ADMIN, LIBRARIAN, READER
+    private String role;      // ADMIN, LIBRARIAN, AUDITOR, READER
     private String status;    // ACTIVE, LOCKED
     private LocalDateTime createdAt;
 
@@ -99,6 +99,10 @@ public class User implements Serializable {
 
     public boolean isLibrarian() {
         return "LIBRARIAN".equalsIgnoreCase(role);
+    }
+
+    public boolean isAuditor() {
+        return "AUDITOR".equalsIgnoreCase(role);
     }
 
     @Override
