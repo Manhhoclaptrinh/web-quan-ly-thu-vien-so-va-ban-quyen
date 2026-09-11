@@ -1,5 +1,7 @@
 package vn.edu.eaut.library.servlet;
 
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -9,8 +11,6 @@ import vn.edu.eaut.library.dao.UserDAO;
 import vn.edu.eaut.library.model.User;
 import vn.edu.eaut.library.utils.PasswordUtil;
 
-import java.io.IOException;
-
 @WebServlet("/users/*")
 public class UserServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
@@ -18,6 +18,11 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        User current = (User) req.getSession().getAttribute("currentUser");
+        if (current != null && current.isAdmin()) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "ADMIN chỉ xem người dùng tại Admin Panel.");
+            return;
+        }
         String path = req.getPathInfo();
         if (path == null || "/".equals(path)) {
             req.setAttribute("users", userDAO.findAll());
@@ -38,12 +43,26 @@ public class UserServlet extends HttpServlet {
         if ("/delete".equals(path)) {
             int id = parseId(req, resp);
             if (id < 0) return;
-            User current = (User) req.getSession().getAttribute("currentUser");
+
             if (id == current.getUserId()) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Không thể tự xóa tài khoản đang đăng nhập.");
+                resp.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "Không thể tự xóa tài khoản đang đăng nhập."
+                );
                 return;
             }
-            userDAO.delete(id); auditLogDAO.insert(current.getUserId(),"DELETE_USER","USER",id,"Xóa người dùng #"+id,req.getRemoteAddr());
+
+            userDAO.delete(id);
+
+            auditLogDAO.insert(
+                current.getUserId(),
+                "DELETE_USER",
+                "USER",
+                id,
+                "Xóa người dùng #" + id,
+                req.getRemoteAddr()
+            );
+
             resp.sendRedirect(req.getContextPath() + "/users");
             return;
         }
@@ -52,6 +71,11 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        User current = (User) req.getSession().getAttribute("currentUser");
+        if (current != null && current.isAdmin()) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "ADMIN không được thao tác dữ liệu người dùng.");
+            return;
+        }
         req.setCharacterEncoding("UTF-8");
         String path = req.getPathInfo();
         if ("/save".equals(path)) {
@@ -60,12 +84,26 @@ public class UserServlet extends HttpServlet {
         }
         if ("/toggle-status".equals(path)) {
             int id = Integer.parseInt(req.getParameter("id"));
-            User current = (User) req.getSession().getAttribute("currentUser");
+
             if (id == current.getUserId()) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Không thể tự khóa/mở khóa tài khoản đang đăng nhập.");
+                resp.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "Không thể tự khóa/mở khóa tài khoản đang đăng nhập."
+                );
                 return;
             }
-            userDAO.toggleStatus(id); auditLogDAO.insert(current.getUserId(),"TOGGLE_USER_STATUS","USER",id,"Thay đổi trạng thái người dùng #"+id,req.getRemoteAddr());
+
+            userDAO.toggleStatus(id);
+
+            auditLogDAO.insert(
+                current.getUserId(),
+                "TOGGLE_USER_STATUS",
+                "USER",
+                id,
+                "Thay đổi trạng thái người dùng #" + id,
+                req.getRemoteAddr()
+            );
+
             resp.sendRedirect(req.getContextPath() + "/users");
             return;
         }

@@ -154,6 +154,7 @@ public class VideoServlet extends HttpServlet {
     private boolean canAccess(User u,Video v,String type){
         if(u==null || v==null || !"AVAILABLE".equalsIgnoreCase(v.getStatus())) return false;
         if(u.isAdmin()||u.isLibrarian()) return true;
+        if(u.isAuditor()) return "VIEW".equalsIgnoreCase(type);
         if(!licenseDAO.hasValidLicense(v.getVideoId())) return false;
         if("PUBLIC".equalsIgnoreCase(v.getAccessLevel())&&"VIEW".equalsIgnoreCase(type)) return true;
         return permissionDAO.hasPermission(u.getUserId(),v.getVideoId(),type);

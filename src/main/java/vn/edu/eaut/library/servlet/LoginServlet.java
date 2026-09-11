@@ -22,7 +22,7 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
-            resp.sendRedirect(req.getContextPath() + "/home");
+            resp.sendRedirect(req.getContextPath() + ("ADMIN".equalsIgnoreCase(((User) session.getAttribute("currentUser")).getRole()) ? "/admin" : "/home"));
             return;
         }
         req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
@@ -67,7 +67,7 @@ public class LoginServlet extends HttpServlet {
         history.setIpAddress(req.getRemoteAddr());
         safeLog(history);
 
-        resp.sendRedirect(req.getContextPath() + "/home");
+        resp.sendRedirect(req.getContextPath() + (user.isAdmin() ? "/admin" : "/home"));
     }
 
     private void safeLog(AccessHistory history) {

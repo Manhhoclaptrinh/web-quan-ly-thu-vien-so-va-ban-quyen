@@ -28,7 +28,7 @@ public class VideoLicenseServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) {
-            licenseDAO.markExpiredLicenses();
+            if (!((User) req.getSession().getAttribute("currentUser")).isAuditor()) licenseDAO.markExpiredLicenses();
             List<VideoLicense> licenses = licenseDAO.findAll();
             req.setAttribute("licenses", licenses);
             req.setAttribute("videos", videoDAO.findAll());

@@ -9,16 +9,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import vn.edu.eaut.library.dao.DocumentDAO;
-import vn.edu.eaut.library.dao.LicenseDAO;
-import vn.edu.eaut.library.model.License;
+import vn.edu.eaut.library.dao.BookDAO;
+import vn.edu.eaut.library.dao.BookLicenseDAO;
+import vn.edu.eaut.library.model.BookLicense;
 import vn.edu.eaut.library.model.User;
 
-@WebServlet("/license/*")
-public class LicenseServlet extends HttpServlet {
+@WebServlet("/book-license/*")
+public class BookLicenseServlet extends HttpServlet {
 
-    private final LicenseDAO licenseDAO = new LicenseDAO();
-    private final DocumentDAO documentDAO = new DocumentDAO();
+    private final BookLicenseDAO licenseDAO = new BookLicenseDAO();
+    private final BookDAO bookDAO = new BookDAO();
     private final vn.edu.eaut.library.dao.AuditLogDAO auditLogDAO = new vn.edu.eaut.library.dao.AuditLogDAO();
 
     @Override
@@ -29,20 +29,20 @@ public class LicenseServlet extends HttpServlet {
 
         if (pathInfo == null || pathInfo.equals("/")) {
             if (!((User) req.getSession().getAttribute("currentUser")).isAuditor()) licenseDAO.markExpiredLicenses();
-            List<License> licenses = licenseDAO.findAll();
+            List<BookLicense> licenses = licenseDAO.findAll();
             req.setAttribute("licenses", licenses);
-            req.setAttribute("documents", documentDAO.findAll());
-            req.getRequestDispatcher("/views/license.jsp").forward(req, resp);
+            req.setAttribute("books", bookDAO.findAll());
+            req.getRequestDispatcher("/views/book-license.jsp").forward(req, resp);
         } else if (pathInfo.equals("/edit")) {
             int id = Integer.parseInt(req.getParameter("id"));
             req.setAttribute("editLicense", licenseDAO.findById(id));
             req.setAttribute("licenses", licenseDAO.findAll());
-            req.setAttribute("documents", documentDAO.findAll());
-            req.getRequestDispatcher("/views/license.jsp").forward(req, resp);
+            req.setAttribute("books", bookDAO.findAll());
+            req.getRequestDispatcher("/views/book-license.jsp").forward(req, resp);
         } else if (pathInfo.equals("/delete")) {
             int id = Integer.parseInt(req.getParameter("id"));
             licenseDAO.delete(id);
-            resp.sendRedirect(req.getContextPath() + "/license");
+            resp.sendRedirect(req.getContextPath() + "/book-license");
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -63,7 +63,7 @@ public class LicenseServlet extends HttpServlet {
 
     private void saveLicense(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String idParam = req.getParameter("licenseId");
-        int documentId = Integer.parseInt(req.getParameter("documentId"));
+        int bookId = Integer.parseInt(req.getParameter("bookId"));
         String licenseType = req.getParameter("licenseType");
         String licenseCode = req.getParameter("licenseCode");
         String issuedDateStr = req.getParameter("issuedDate");
@@ -71,8 +71,8 @@ public class LicenseServlet extends HttpServlet {
         String terms = req.getParameter("terms");
         String status = req.getParameter("status");
 
-        License license = new License();
-        license.setDocumentId(documentId);
+        BookLicense license = new BookLicense();
+        license.setBookId(bookId);
         license.setLicenseType(licenseType);
         license.setLicenseCode(licenseCode);
         license.setIssuedDate(parseDateOrNull(issuedDateStr));
@@ -81,13 +81,13 @@ public class LicenseServlet extends HttpServlet {
         license.setStatus(status != null ? status : "VALID");
 
         if (idParam == null || idParam.trim().isEmpty()) {
-            licenseDAO.insert(license); User current=(User)req.getSession().getAttribute("currentUser"); auditLogDAO.insert(current.getUserId(),"CREATE_LICENSE","DOCUMENT",documentId,"Thêm bản quyền cho tài liệu #"+documentId,req.getRemoteAddr());
+            licenseDAO.insert(license); User current=(User)req.getSession().getAttribute("currentUser"); auditLogDAO.insert(current.getUserId(),"CREATE_BOOK_LICENSE","BOOK",bookId,"Thêm bản quyền cho sách #"+bookId,req.getRemoteAddr());
         } else {
             license.setLicenseId(Integer.parseInt(idParam));
-            licenseDAO.update(license); User current=(User)req.getSession().getAttribute("currentUser"); auditLogDAO.insert(current.getUserId(),"UPDATE_LICENSE","LICENSE",license.getLicenseId(),"Cập nhật bản quyền #"+license.getLicenseId(),req.getRemoteAddr());
+            licenseDAO.update(license); User current=(User)req.getSession().getAttribute("currentUser"); auditLogDAO.insert(current.getUserId(),"UPDATE_BOOK_LICENSE","BOOK_LICENSE",license.getLicenseId(),"Cập nhật bản quyền sách #"+license.getLicenseId(),req.getRemoteAddr());
         }
 
-        resp.sendRedirect(req.getContextPath() + "/license");
+        resp.sendRedirect(req.getContextPath() + "/book-license");
     }
 
     private LocalDate parseDateOrNull(String value) {

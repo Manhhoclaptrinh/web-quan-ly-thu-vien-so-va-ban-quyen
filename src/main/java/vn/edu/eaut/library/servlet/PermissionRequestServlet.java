@@ -43,7 +43,7 @@ public class PermissionRequestServlet extends HttpServlet {
 
         String path = req.getPathInfo();
         if (path == null || "/".equals(path) || path.isEmpty()) {
-            if (user.isAdmin() || user.isLibrarian()) {
+            if (user.isAdmin() || user.isLibrarian() || user.isAuditor()) {
                 // STAFF luôn lấy toàn bộ request để hiển thị cho Admin/Librarian.
                 req.setAttribute("requests", dao.findAll());
             } else {

@@ -11,19 +11,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.eaut.library.dao.AuditLogDAO;
+import vn.edu.eaut.library.dao.BookDAO;
+import vn.edu.eaut.library.dao.BookLicenseDAO;
+import vn.edu.eaut.library.dao.BookPermissionRequestDAO;
 import vn.edu.eaut.library.dao.NotificationDAO;
-import vn.edu.eaut.library.dao.VideoDAO;
-import vn.edu.eaut.library.dao.VideoLicenseDAO;
-import vn.edu.eaut.library.dao.VideoPermissionRequestDAO;
+import vn.edu.eaut.library.model.Book;
+import vn.edu.eaut.library.model.BookPermissionRequest;
 import vn.edu.eaut.library.model.User;
-import vn.edu.eaut.library.model.Video;
-import vn.edu.eaut.library.model.VideoPermissionRequest;
 
-@WebServlet("/video-permission-request/*")
-public class VideoPermissionRequestServlet extends HttpServlet {
-    private final VideoPermissionRequestDAO dao = new VideoPermissionRequestDAO();
-    private final VideoDAO videoDAO = new VideoDAO();
-    private final VideoLicenseDAO licenseDAO = new VideoLicenseDAO();
+@WebServlet("/book-permission-request/*")
+public class BookPermissionRequestServlet extends HttpServlet {
+    private final BookPermissionRequestDAO dao = new BookPermissionRequestDAO();
+    private final BookDAO bookDAO = new BookDAO();
+    private final BookLicenseDAO licenseDAO = new BookLicenseDAO();
     private final NotificationDAO notificationDAO = new NotificationDAO();
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
@@ -47,9 +47,9 @@ public class VideoPermissionRequestServlet extends HttpServlet {
                 req.setAttribute("requests", dao.findAll());
             } else {
                 req.setAttribute("requests", dao.findByUserId(user.getUserId()));
-                req.setAttribute("videos", videoDAO.findAll());
+                req.setAttribute("books", bookDAO.findAll());
             }
-            req.getRequestDispatcher("/views/video-permission-requests.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/book-permission-requests.jsp").forward(req, resp);
             return;
         }
 
@@ -97,23 +97,23 @@ public class VideoPermissionRequestServlet extends HttpServlet {
             return;
         }
 
-        String videoParam = req.getParameter("videoId");
+        String bookParam = req.getParameter("bookId");
         String permissionType = req.getParameter("permissionType");
 
-        if (videoParam == null || videoParam.trim().isEmpty()) {
-            throw new IllegalArgumentException("Chưa chọn video.");
+        if (bookParam == null || bookParam.trim().isEmpty()) {
+            throw new IllegalArgumentException("Chưa chọn sách.");
         }
 
-        int videoId = Integer.parseInt(videoParam);
-        Video video = videoDAO.findById(videoId);
+        int bookId = Integer.parseInt(bookParam);
+        Book book = bookDAO.findById(bookId);
 
-        if (video == null) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy video.");
+        if (book == null) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy sách.");
             return;
         }
 
-        if (!"AVAILABLE".equalsIgnoreCase(video.getStatus())) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Video đang bị vô hiệu hóa.");
+        if (!"AVAILABLE".equalsIgnoreCase(book.getStatus())) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Sách đang bị vô hiệu hóa.");
             return;
         }
 
@@ -123,21 +123,21 @@ public class VideoPermissionRequestServlet extends HttpServlet {
 
         permissionType = permissionType.toUpperCase();
 
-        vn.edu.eaut.library.dao.VideoPermissionDAO permissionDAO =
-                new vn.edu.eaut.library.dao.VideoPermissionDAO();
-        if (permissionDAO.hasPermission(user.getUserId(), videoId, permissionType)) {
-            resp.sendRedirect(req.getContextPath() + "/video-permission-request?error=already-granted");
+        vn.edu.eaut.library.dao.BookPermissionDAO permissionDAO =
+                new vn.edu.eaut.library.dao.BookPermissionDAO();
+        if (permissionDAO.hasPermission(user.getUserId(), bookId, permissionType)) {
+            resp.sendRedirect(req.getContextPath() + "/book-permission-request?error=already-granted");
             return;
         }
 
-        if (dao.hasPending(user.getUserId(), videoId, permissionType)) {
-            resp.sendRedirect(req.getContextPath() + "/video-permission-request?error=pending");
+        if (dao.hasPending(user.getUserId(), bookId, permissionType)) {
+            resp.sendRedirect(req.getContextPath() + "/book-permission-request?error=pending");
             return;
         }
 
-        VideoPermissionRequest request = new VideoPermissionRequest();
+        BookPermissionRequest request = new BookPermissionRequest();
         request.setUserId(user.getUserId());
-        request.setVideoId(videoId);
+        request.setBookId(bookId);
         request.setPermissionType(permissionType);
         request.setReason(req.getParameter("reason"));
 
@@ -147,12 +147,12 @@ public class VideoPermissionRequestServlet extends HttpServlet {
         }
 
         try {
-            auditLogDAO.insert(user.getUserId(), "REQUEST_VIDEO_PERMISSION", "VIDEO", videoId,
-                    "Gửi yêu cầu quyền " + permissionType + " cho video", req.getRemoteAddr());
+            auditLogDAO.insert(user.getUserId(), "REQUEST_BOOK_PERMISSION", "BOOK", bookId,
+                    "Gửi yêu cầu quyền " + permissionType + " cho sách", req.getRemoteAddr());
         } catch (Exception ignored) {
         }
 
-        resp.sendRedirect(req.getContextPath() + "/video-permission-request?success=created");
+        resp.sendRedirect(req.getContextPath() + "/book-permission-request?success=created");
     }
 
     private void processRequest(HttpServletRequest req, HttpServletResponse resp,
@@ -168,22 +168,22 @@ public class VideoPermissionRequestServlet extends HttpServlet {
         }
         int requestId = Integer.parseInt(idParam);
 
-        VideoPermissionRequest request = dao.findById(requestId);
+        BookPermissionRequest request = dao.findById(requestId);
         if (request == null) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy yêu cầu cấp quyền.");
             return;
         }
 
         if (!"PENDING".equalsIgnoreCase(request.getStatus())) {
-            resp.sendRedirect(req.getContextPath() + "/video-permission-request?error=processed");
+            resp.sendRedirect(req.getContextPath() + "/book-permission-request?error=processed");
             return;
         }
 
         if (approve) {
             Timestamp expiry = parseExpiry(req.getParameter("expiryDate"));
 
-            if (!licenseDAO.hasValidLicense(request.getVideoId())) {
-                resp.sendRedirect(req.getContextPath() + "/video-permission-request?error=no-license");
+            if (!licenseDAO.hasValidLicense(request.getBookId())) {
+                resp.sendRedirect(req.getContextPath() + "/book-permission-request?error=no-license");
                 return;
             }
 
@@ -192,13 +192,13 @@ public class VideoPermissionRequestServlet extends HttpServlet {
                 try {
                     notificationDAO.create(
                             request.getUserId(),
-                            "Yêu cầu quyền video được duyệt",
-                            "Yêu cầu " + request.getPermissionType() + " cho video \""
-                                    + request.getVideoTitle() + "\" đã được duyệt. Hạn quyền: " + expiryMsg + ".",
+                            "Yêu cầu quyền sách được duyệt",
+                            "Yêu cầu " + request.getPermissionType() + " cho sách \""
+                                    + request.getBookTitle() + "\" đã được duyệt. Hạn quyền: " + expiryMsg + ".",
                             "PERMISSION"
                     );
-                    auditLogDAO.insert(user.getUserId(), "APPROVE_VIDEO_PERMISSION", "VIDEO_PERMISSION_REQUEST",
-                            requestId, "Duyệt yêu cầu " + request.getPermissionType() + " cho " + request.getVideoTitle(),
+                    auditLogDAO.insert(user.getUserId(), "APPROVE_BOOK_PERMISSION", "BOOK_PERMISSION_REQUEST",
+                            requestId, "Duyệt yêu cầu " + request.getPermissionType() + " cho " + request.getBookTitle(),
                             req.getRemoteAddr());
                 } catch (Exception ignored) {
                 }
@@ -208,20 +208,20 @@ public class VideoPermissionRequestServlet extends HttpServlet {
                 try {
                     notificationDAO.create(
                             request.getUserId(),
-                            "Yêu cầu quyền video bị từ chối",
-                            "Yêu cầu " + request.getPermissionType() + " cho video \""
-                                    + request.getVideoTitle() + "\" đã bị từ chối.",
+                            "Yêu cầu quyền sách bị từ chối",
+                            "Yêu cầu " + request.getPermissionType() + " cho sách \""
+                                    + request.getBookTitle() + "\" đã bị từ chối.",
                             "PERMISSION"
                     );
-                    auditLogDAO.insert(user.getUserId(), "REJECT_VIDEO_PERMISSION", "VIDEO_PERMISSION_REQUEST",
-                            requestId, "Từ chối yêu cầu quyền cho " + request.getVideoTitle(),
+                    auditLogDAO.insert(user.getUserId(), "REJECT_BOOK_PERMISSION", "BOOK_PERMISSION_REQUEST",
+                            requestId, "Từ chối yêu cầu quyền cho " + request.getBookTitle(),
                             req.getRemoteAddr());
                 } catch (Exception ignored) {
                 }
             }
         }
 
-        resp.sendRedirect(req.getContextPath() + "/video-permission-request");
+        resp.sendRedirect(req.getContextPath() + "/book-permission-request");
     }
 
     private Timestamp parseExpiry(String value) {

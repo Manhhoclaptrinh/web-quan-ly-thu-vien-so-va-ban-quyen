@@ -9,19 +9,19 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import vn.edu.eaut.library.dao.BookDAO;
+import vn.edu.eaut.library.dao.BookPermissionDAO;
 import vn.edu.eaut.library.dao.UserDAO;
-import vn.edu.eaut.library.dao.VideoDAO;
-import vn.edu.eaut.library.dao.VideoPermissionDAO;
+import vn.edu.eaut.library.model.BookPermission;
 import vn.edu.eaut.library.model.User;
-import vn.edu.eaut.library.model.VideoPermission;
 
-@WebServlet("/video-permission/*")
-public class VideoPermissionServlet extends HttpServlet {
+@WebServlet("/book-permission/*")
+public class BookPermissionServlet extends HttpServlet {
 
     private final vn.edu.eaut.library.dao.AuditLogDAO auditLogDAO = new vn.edu.eaut.library.dao.AuditLogDAO();
-    private final VideoPermissionDAO permissionDAO = new VideoPermissionDAO();
+    private final BookPermissionDAO permissionDAO = new BookPermissionDAO();
     private final UserDAO userDAO = new UserDAO();
-    private final VideoDAO videoDAO = new VideoDAO();
+    private final BookDAO bookDAO = new BookDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -30,18 +30,18 @@ public class VideoPermissionServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) {
-            List<VideoPermission> permissions = permissionDAO.findAll();
+            List<BookPermission> permissions = permissionDAO.findAll();
             req.setAttribute("permissions", permissions);
             req.setAttribute("users", userDAO.findAll());
-            req.setAttribute("videos", videoDAO.findAll());
-            req.getRequestDispatcher("/views/video-permissions.jsp").forward(req, resp);
+            req.setAttribute("books", bookDAO.findAll());
+            req.getRequestDispatcher("/views/book-permissions.jsp").forward(req, resp);
         } else if (pathInfo.equals("/delete")) {
             int id = Integer.parseInt(req.getParameter("id"));
             permissionDAO.delete(id);
             User current = (User) req.getSession().getAttribute("currentUser");
-            auditLogDAO.insert(current.getUserId(), "REVOKE_VIDEO_PERMISSION", "VIDEO_PERMISSION", id,
-                    "Thu hồi quyền video #" + id, req.getRemoteAddr());
-            resp.sendRedirect(req.getContextPath() + "/video-permission");
+            auditLogDAO.insert(current.getUserId(), "REVOKE_BOOK_PERMISSION", "BOOK_PERMISSION", id,
+                    "Thu hồi quyền sách #" + id, req.getRemoteAddr());
+            resp.sendRedirect(req.getContextPath() + "/book-permission");
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -62,15 +62,15 @@ public class VideoPermissionServlet extends HttpServlet {
 
     private void savePermission(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         int userId = Integer.parseInt(req.getParameter("userId"));
-        int videoId = Integer.parseInt(req.getParameter("videoId"));
+        int bookId = Integer.parseInt(req.getParameter("bookId"));
         String permissionType = req.getParameter("permissionType");
         String expiryDateStr = req.getParameter("expiryDate"); // định dạng yyyy-MM-ddTHH:mm (datetime-local)
 
         User currentUser = (User) req.getSession().getAttribute("currentUser");
 
-        VideoPermission permission = new VideoPermission();
+        BookPermission permission = new BookPermission();
         permission.setUserId(userId);
-        permission.setVideoId(videoId);
+        permission.setBookId(bookId);
         permission.setPermissionType(permissionType);
         permission.setGrantedBy(currentUser.getUserId());
 
@@ -79,8 +79,8 @@ public class VideoPermissionServlet extends HttpServlet {
         }
 
         permissionDAO.insert(permission);
-        auditLogDAO.insert(currentUser.getUserId(), "GRANT_VIDEO_PERMISSION", "VIDEO", videoId,
-                "Cấp quyền " + permissionType + " video cho user #" + userId, req.getRemoteAddr());
-        resp.sendRedirect(req.getContextPath() + "/video-permission");
+        auditLogDAO.insert(currentUser.getUserId(), "GRANT_BOOK_PERMISSION", "BOOK", bookId,
+                "Cấp quyền " + permissionType + " sách cho user #" + userId, req.getRemoteAddr());
+        resp.sendRedirect(req.getContextPath() + "/book-permission");
     }
 }
