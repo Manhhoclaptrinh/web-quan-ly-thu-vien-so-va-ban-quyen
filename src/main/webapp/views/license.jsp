@@ -12,7 +12,8 @@
 
 <div class="container">
     <div class="card">
-        <h1>${empty editLicense ? "Thêm bản quyền" : "Cập nhật bản quyền"}</h1>
+        <c:if test="${isViewer}"><h1>©️ Bản quyền tài liệu</h1><p class="text-muted">Viewer / Read-only Admin chỉ được xem thông tin bản quyền.</p></c:if>
+        <c:if test="${not isViewer}"><h1>${empty editLicense ? "Thêm bản quyền" : "Cập nhật bản quyền"}</h1>
         <form action="${pageContext.request.contextPath}/license/save" method="post"><c:if test="${not empty editLicense}"><input type="hidden" name="licenseId" value="${editLicense.licenseId}"></c:if>
             <div class="form-group">
                 <label>Tài liệu</label>
@@ -56,7 +57,7 @@
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">Lưu bản quyền</button> <c:if test="${not empty editLicense}"><a href="${pageContext.request.contextPath}/license" class="btn btn-secondary">Hủy sửa</a></c:if>
-        </form>
+        </form></c:if>
     </div>
 
     <div class="card">
@@ -96,10 +97,10 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td>
+                            <td><c:choose><c:when test="${isViewer}"><span class="text-muted">Chỉ xem</span></c:when><c:otherwise>
                                 <a href="${pageContext.request.contextPath}/license/edit?id=${lic.licenseId}">Sửa</a> | <a href="${pageContext.request.contextPath}/license/delete?id=${lic.licenseId}"
                                    onclick="return confirm('Xóa bản quyền này?');" style="color:#dc2626;">Xóa</a>
-                            </td>
+                            </c:otherwise></c:choose></td>
                         </tr>
                     </c:forEach>
                     </tbody>

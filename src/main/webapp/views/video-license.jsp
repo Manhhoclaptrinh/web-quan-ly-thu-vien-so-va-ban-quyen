@@ -12,7 +12,8 @@
 
 <div class="container">
     <div class="card">
-        <h1>${empty editLicense ? "Thêm bản quyền video" : "Cập nhật bản quyền video"}</h1>
+        <c:if test="${isViewer}"><h1>©️ Bản quyền video</h1><p class="text-muted">Viewer / Read-only Admin chỉ được xem thông tin bản quyền.</p></c:if>
+        <c:if test="${not isViewer}"><h1>${empty editLicense ? "Thêm bản quyền video" : "Cập nhật bản quyền video"}</h1>
         <form action="${pageContext.request.contextPath}/video-license/save" method="post"><c:if test="${not empty editLicense}"><input type="hidden" name="licenseId" value="${editLicense.licenseId}"></c:if>
             <div class="form-group">
                 <label>Video</label>
@@ -56,7 +57,7 @@
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">Lưu bản quyền</button> <c:if test="${not empty editLicense}"><a href="${pageContext.request.contextPath}/video-license" class="btn btn-secondary">Hủy sửa</a></c:if>
-        </form>
+        </form></c:if>
     </div>
 
     <div class="card">

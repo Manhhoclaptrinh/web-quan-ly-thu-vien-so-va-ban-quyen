@@ -12,7 +12,8 @@
 
 <div class="container">
     <div class="card">
-        <h1>Cấp quyền truy cập tài liệu</h1>
+        <c:if test="${isViewer}"><h1>🔐 Danh sách phân quyền</h1><p class="text-muted">Viewer / Read-only Admin chỉ được xem quyền đã cấp.</p></c:if>
+        <c:if test="${not isViewer}"><h1>Cấp quyền truy cập tài liệu</h1>
         <form action="${pageContext.request.contextPath}/permission/save" method="post">
             <div class="form-group">
                 <label>Người dùng</label>
@@ -43,7 +44,7 @@
                 <input type="datetime-local" name="expiryDate" class="form-control">
             </div>
             <button type="submit" class="btn btn-primary">Cấp quyền</button>
-        </form>
+        </form></c:if>
     </div>
 
     <div class="card">
@@ -74,10 +75,10 @@
                             <td>${p.grantedByName}</td>
                             <td>${p.grantedDate}</td>
                             <td>${empty p.expiryDate ? 'Không giới hạn' : p.expiryDate}</td>
-                            <td>
+                            <td><c:choose><c:when test="${isViewer}"><span class="text-muted">Chỉ xem</span></c:when><c:otherwise>
                                 <a href="${pageContext.request.contextPath}/permission/delete?id=${p.permissionId}"
                                    onclick="return confirm('Thu hồi quyền này?');" style="color:#dc2626;">Thu hồi</a>
-                            </td>
+                            </c:otherwise></c:choose></td>
                         </tr>
                     </c:forEach>
                     </tbody>
