@@ -1,8 +1,11 @@
 package vn.edu.eaut.library.dao;
 
-import vn.edu.eaut.library.utils.DBConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import java.sql.*;
+import vn.edu.eaut.library.utils.DBConnection;
 
 /** Cung cấp các số liệu tổng hợp cho Dashboard. */
 public class DashboardDAO {
@@ -27,6 +30,18 @@ public class DashboardDAO {
         return count("SELECT COUNT(*) FROM video_licenses WHERE status = 'VALID' AND (expiry_date IS NULL OR expiry_date >= CURDATE())");
     }
 
+    public int countBooks() {
+        return count("SELECT COUNT(*) FROM books");
+    }
+
+    public int countAvailableBooks() {
+        return count("SELECT COUNT(*) FROM books WHERE status = 'AVAILABLE'");
+    }
+
+    public int countValidBookLicenses() {
+        return count("SELECT COUNT(*) FROM book_licenses WHERE status = 'VALID' AND (expiry_date IS NULL OR expiry_date >= CURDATE())");
+    }
+
     public int countCategories() {
         return count("SELECT COUNT(*) FROM categories");
     }
@@ -40,7 +55,7 @@ public class DashboardDAO {
     }
 
     public int countPermissions() {
-        return count("SELECT COUNT(*) FROM permissions");
+        return count("SELECT (SELECT COUNT(*) FROM permissions) + (SELECT COUNT(*) FROM video_permissions) + (SELECT COUNT(*) FROM book_permissions)");
     }
 
     public int countValidLicenses() {
@@ -74,7 +89,10 @@ public class DashboardDAO {
                 "WHERE h.action_type IN ('VIEW','DOWNLOAD') AND (h.target_type IS NULL OR h.target_type='DOCUMENT') GROUP BY d.document_id,d.title " +
                 "UNION ALL " +
                 "SELECT CONCAT(v.title,' (Video)') AS title, COUNT(h.history_id) AS total FROM access_history h JOIN videos v ON h.video_id=v.video_id " +
-                "WHERE h.action_type IN ('VIEW','DOWNLOAD') AND h.target_type='VIDEO' GROUP BY v.video_id,v.title" +
+                "WHERE h.action_type IN ('VIEW','DOWNLOAD') AND h.target_type='VIDEO' GROUP BY v.video_id,v.title " +
+                "UNION ALL " +
+                "SELECT CONCAT(bk.title,' (Sách)') AS title, COUNT(h.history_id) AS total FROM access_history h JOIN books bk ON h.book_id=bk.book_id " +
+                "WHERE h.action_type IN ('VIEW','DOWNLOAD') AND h.target_type='BOOK' GROUP BY bk.book_id,bk.title" +
                 ") combined GROUP BY title ORDER BY total DESC LIMIT ?";
         try(Connection conn=DBConnection.getConnection();PreparedStatement ps=conn.prepareStatement(sql)){ps.setInt(1,Math.max(1,Math.min(limit,20)));try(ResultSet rs=ps.executeQuery()){while(rs.next()){java.util.Map<String,Object> m=new java.util.HashMap<>();m.put("title",rs.getString(1));m.put("total",rs.getInt(2));list.add(m);}}}
         catch(SQLException e){throw new RuntimeException("Lỗi thống kê tài liệu phổ biến",e);} return list;

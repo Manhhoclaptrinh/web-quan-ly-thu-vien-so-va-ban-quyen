@@ -18,14 +18,20 @@ public class FavoriteDAO {
  public boolean addVideo(int userId,int videoId){String s="INSERT IGNORE INTO favorites(user_id,item_type,video_id) VALUES(?, 'VIDEO', ?)";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s)){p.setInt(1,userId);p.setInt(2,videoId);return p.executeUpdate()>0;}catch(SQLException e){throw new RuntimeException("Lỗi thêm yêu thích video",e);}}
  public boolean removeVideo(int userId,int videoId){String s="DELETE FROM favorites WHERE user_id=? AND video_id=? AND item_type='VIDEO'";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s)){p.setInt(1,userId);p.setInt(2,videoId);return p.executeUpdate()>0;}catch(SQLException e){throw new RuntimeException("Lỗi xóa yêu thích video",e);}}
 
+ public boolean existsBook(int userId,int bookId){String s="SELECT COUNT(*) FROM favorites WHERE user_id=? AND book_id=? AND item_type='BOOK'";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s)){p.setInt(1,userId);p.setInt(2,bookId);try(ResultSet r=p.executeQuery()){return r.next()&&r.getInt(1)>0;}}catch(SQLException e){throw new RuntimeException("Lỗi kiểm tra yêu thích sách",e);}}
+ public boolean addBook(int userId,int bookId){String s="INSERT IGNORE INTO favorites(user_id,item_type,book_id) VALUES(?, 'BOOK', ?)";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s)){p.setInt(1,userId);p.setInt(2,bookId);return p.executeUpdate()>0;}catch(SQLException e){throw new RuntimeException("Lỗi thêm yêu thích sách",e);}}
+ public boolean removeBook(int userId,int bookId){String s="DELETE FROM favorites WHERE user_id=? AND book_id=? AND item_type='BOOK'";try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s)){p.setInt(1,userId);p.setInt(2,bookId);return p.executeUpdate()>0;}catch(SQLException e){throw new RuntimeException("Lỗi xóa yêu thích sách",e);}}
+
  public List<Favorite> findByUserId(int userId){
     List<Favorite> l=new ArrayList<>();
     String s="SELECT f.*, d.title AS document_title, d.author AS author FROM favorites f JOIN documents d ON f.document_id=d.document_id WHERE f.user_id=? AND f.item_type='DOCUMENT' " +
              "UNION ALL " +
              "SELECT f.*, vv.title AS document_title, vv.author AS author FROM favorites f JOIN videos vv ON f.video_id=vv.video_id WHERE f.user_id=? AND f.item_type='VIDEO' " +
+             "UNION ALL " +
+             "SELECT f.*, bb.title AS document_title, bb.author AS author FROM favorites f JOIN books bb ON f.book_id=bb.book_id WHERE f.user_id=? AND f.item_type='BOOK' " +
              "ORDER BY created_at DESC";
     try(Connection c=DBConnection.getConnection();PreparedStatement p=c.prepareStatement(s)){
-        p.setInt(1,userId); p.setInt(2,userId);
+        p.setInt(1,userId); p.setInt(2,userId); p.setInt(3,userId);
         try(ResultSet r=p.executeQuery()){while(r.next())l.add(map(r));}
     }catch(SQLException e){throw new RuntimeException("Lỗi lấy danh sách yêu thích",e);}
     return l;
@@ -37,6 +43,7 @@ public class FavoriteDAO {
     f.setItemType(r.getString("item_type"));
     int docId=r.getInt("document_id"); if(!r.wasNull()) f.setDocumentId(docId);
     int vidId=r.getInt("video_id"); if(!r.wasNull()) f.setVideoId(vidId);
+    int bookId=r.getInt("book_id"); if(!r.wasNull()) f.setBookId(bookId);
     f.setDocumentTitle(r.getString("document_title"));
     f.setAuthor(r.getString("author"));
     Timestamp t=r.getTimestamp("created_at");if(t!=null)f.setCreatedAt(t.toLocalDateTime());

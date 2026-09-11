@@ -16,11 +16,12 @@ import vn.edu.eaut.library.utils.DBConnection;
 public class HistoryDAO {
 
     private static final String BASE_SELECT =
-            "SELECT h.*, u.username, d.title AS document_title, v.title AS video_title " +
+            "SELECT h.*, u.username, d.title AS document_title, v.title AS video_title, bk.title AS book_title " +
             "FROM access_history h " +
             "LEFT JOIN users u ON h.user_id = u.user_id " +
             "LEFT JOIN documents d ON h.document_id = d.document_id " +
-            "LEFT JOIN videos v ON h.video_id = v.video_id ";
+            "LEFT JOIN videos v ON h.video_id = v.video_id " +
+            "LEFT JOIN books bk ON h.book_id = bk.book_id ";
 
     public List<AccessHistory> findAll() {
         List<AccessHistory> list = new ArrayList<>();
@@ -87,7 +88,7 @@ public class HistoryDAO {
 
     public boolean insert(AccessHistory history) {
         String targetType = history.getTargetType() != null ? history.getTargetType() : "DOCUMENT";
-        String sql = "INSERT INTO access_history (user_id, document_id, target_type, video_id, action_type, ip_address) VALUES (?,?,?,?,?,?)";
+        String sql = "INSERT INTO access_history (user_id, document_id, target_type, video_id, book_id, action_type, ip_address) VALUES (?,?,?,?,?,?,?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, history.getUserId());
@@ -102,8 +103,13 @@ public class HistoryDAO {
             } else {
                 ps.setNull(4, Types.INTEGER);
             }
-            ps.setString(5, history.getActionType());
-            ps.setString(6, history.getIpAddress());
+            if (history.getBookId() != null) {
+                ps.setInt(5, history.getBookId());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+            ps.setString(6, history.getActionType());
+            ps.setString(7, history.getIpAddress());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi khi ghi lịch sử truy cập", e);
@@ -127,6 +133,23 @@ public class HistoryDAO {
         return list;
     }
 
+    public List<AccessHistory> findByBookId(int bookId) {
+        List<AccessHistory> list = new ArrayList<>();
+        String sql = BASE_SELECT + "WHERE h.book_id = ? ORDER BY h.access_time DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi lấy lịch sử truy cập theo sách", e);
+        }
+        return list;
+    }
+
     private AccessHistory mapRow(ResultSet rs) throws SQLException {
         AccessHistory h = new AccessHistory();
         h.setHistoryId(rs.getInt("history_id"));
@@ -139,6 +162,9 @@ public class HistoryDAO {
         int vidId = rs.getInt("video_id");
         h.setVideoId(rs.wasNull() ? null : vidId);
         h.setVideoTitle(rs.getString("video_title"));
+        int bookId = rs.getInt("book_id");
+        h.setBookId(rs.wasNull() ? null : bookId);
+        h.setBookTitle(rs.getString("book_title"));
         h.setActionType(rs.getString("action_type"));
         Timestamp ts = rs.getTimestamp("access_time");
         if (ts != null) {
