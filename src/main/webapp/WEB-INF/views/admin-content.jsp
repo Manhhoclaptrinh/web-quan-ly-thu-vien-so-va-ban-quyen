@@ -1,0 +1,9 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Admin - Nội dung</title><link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css"></head>
+<body class="admin-body"><div class="admin-shell"><%@ include file="/WEB-INF/views/admin-nav.jsp" %><main class="admin-main">
+<div class="admin-head"><div><h1>Nội dung</h1><p>Documents, Videos và Books ở chế độ giám sát.</p></div><span class="admin-badge">READ-ONLY</span></div>
+<section class="panel"><h2>Documents</h2><table class="table"><thead><tr><th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>Danh mục</th><th>Access</th><th>Status</th><th>Người upload</th></tr></thead><tbody><c:forEach var="d" items="${documents}"><tr><td>${d.documentId}</td><td>${d.title}</td><td>${d.author}</td><td>${d.categoryName}</td><td>${d.accessLevel}</td><td>${d.status}</td><td>${d.uploaderName}</td></tr></c:forEach></tbody></table></section>
+<section class="panel"><h2>Videos</h2><table class="table"><thead><tr><th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>Danh mục</th><th>Access</th><th>Status</th><th>Người upload</th></tr></thead><tbody><c:forEach var="v" items="${videos}"><tr><td>${v.videoId}</td><td>${v.title}</td><td>${v.author}</td><td>${v.categoryName}</td><td>${v.accessLevel}</td><td>${v.status}</td><td>${v.uploaderName}</td></tr></c:forEach></tbody></table></section>
+<section class="panel"><h2>Books</h2><table class="table"><thead><tr><th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>ISBN</th><th>NXB</th><th>Năm</th><th>Access</th><th>Status</th></tr></thead><tbody><c:forEach var="b" items="${books}"><tr><td>${b.bookId}</td><td>${b.title}</td><td>${b.author}</td><td>${b.isbn}</td><td>${b.publisher}</td><td>${b.publishYear}</td><td>${b.accessLevel}</td><td>${b.status}</td></tr></c:forEach></tbody></table></section>
+</main></div></body></html>

@@ -1,0 +1,11 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Admin - Phân quyền</title><link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css"></head>
+<body class="admin-body"><div class="admin-shell"><%@ include file="/WEB-INF/views/admin-nav.jsp" %><main class="admin-main">
+<div class="admin-head"><div><h1>Phân quyền</h1><p>Permissions, requests và licenses chỉ được giám sát.</p></div><span class="admin-badge">NO ACTIONS</span></div>
+<section class="panel"><h2>Document Permissions</h2><table class="table"><thead><tr><th>User</th><th>Document</th><th>Type</th><th>Granted by</th><th>Granted date</th><th>Expiry</th></tr></thead><tbody><c:forEach var="p" items="${permissions}"><tr><td>${p.username}</td><td>${p.documentTitle}</td><td>${p.permissionType}</td><td>${p.grantedByName}</td><td>${p.grantedDate}</td><td>${p.expiryDate}</td></tr></c:forEach></tbody></table></section>
+<section class="panel"><h2>Permission Requests</h2><table class="table"><thead><tr><th>User</th><th>Document</th><th>Type</th><th>Status</th><th>Requested</th><th>Processed by</th></tr></thead><tbody><c:forEach var="r" items="${permissionRequests}"><tr><td>${r.username}</td><td>${r.documentTitle}</td><td>${r.permissionType}</td><td>${r.status}</td><td>${r.requestedDate}</td><td>${r.processedByName}</td></tr></c:forEach></tbody></table></section>
+<section class="panel"><h2>Video / Book Permissions & Requests</h2><p class="muted">Video permissions: ${videoPermissions.size()} · Video requests: ${videoPermissionRequests.size()} · Book permissions: ${bookPermissions.size()} · Book requests: ${bookPermissionRequests.size()}</p></section>
+<section class="panel"><h2>Licenses</h2><p class="muted">Document licenses: ${licenses.size()} · Video licenses: ${videoLicenses.size()} · Book licenses: ${bookLicenses.size()}</p></section>
+<div class="readonly">ADMIN chỉ giám sát. Không có nút cấp quyền, thu hồi quyền, duyệt request, thêm/sửa/xóa license.</div>
+</main></div></body></html>
