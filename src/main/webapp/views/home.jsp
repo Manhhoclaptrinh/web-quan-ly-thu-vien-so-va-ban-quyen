@@ -17,10 +17,12 @@
         <div>
             <span class="eyebrow">DIGITAL LIBRARY MANAGEMENT</span>
             <h1>Xin chào, ${sessionScope.currentUser.fullName} 👋</h1>
-            <p>Quản lý tài liệu số, bản quyền và quyền truy cập trên một hệ thống tập trung.</p>
+            <p>Tra cứu dữ liệu, báo cáo và nhật ký hệ thống trên một giao diện tập trung.</p>
+            <c:if test="${isViewer}"><p class="text-muted"><strong>Viewer / Read-only Admin:</strong> chỉ xem dữ liệu, báo cáo và nhật ký hệ thống; không được thêm, sửa, xóa, cấp quyền hoặc duyệt.</p></c:if>
         </div>
         <div class="hero-actions">
             <a href="${pageContext.request.contextPath}/documents" class="btn btn-primary">📚 Kho tài liệu</a>
+            <a href="${pageContext.request.contextPath}/books" class="btn btn-light">📖 Kho sách</a>
             <c:if test="${sessionScope.currentUser.role == 'ADMIN' or sessionScope.currentUser.role == 'LIBRARIAN'}">
                 <a href="${pageContext.request.contextPath}/documents?action=new" class="btn btn-light">＋ Thêm tài liệu</a>
             </c:if>
@@ -35,6 +37,10 @@
         <div class="stat-card">
             <div class="stat-icon">🎬</div>
             <div><div class="stat-label">Tổng video</div><div class="stat-value">${totalVideos}</div><div class="stat-note">${availableVideos} đang khả dụng</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div><div class="stat-label">Tổng sách</div><div class="stat-value">${totalBooks}</div><div class="stat-note">${availableBooks} đang khả dụng</div></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">🗂️</div>
@@ -53,8 +59,26 @@
     <section class="stats-grid stats-grid-small">
         <div class="mini-stat"><span>©️ Bản quyền tài liệu hợp lệ</span><strong>${validLicenses}</strong></div>
         <div class="mini-stat"><span>©️ Bản quyền video hợp lệ</span><strong>${validVideoLicenses}</strong></div>
+        <div class="mini-stat"><span>©️ Bản quyền sách hợp lệ</span><strong>${validBookLicenses}</strong></div>
         <div class="mini-stat"><span>⬇️ Lượt tải xuống</span><strong>${totalDownloads}</strong></div>
         <div class="mini-stat"><span>👁️ Lượt xem</span><strong>${totalViews}</strong></div>
+    </section>
+
+    <section class="card mt-3">
+        <div class="section-heading">
+            <div><span class="eyebrow">BOOKS</span><h2>Sách mới cập nhật</h2></div>
+            <a href="${pageContext.request.contextPath}/books" class="btn btn-secondary btn-sm">Xem tất cả</a>
+        </div>
+        <c:choose>
+            <c:when test="${empty recentBooks}"><div class="empty-state">📭<strong>Chưa có sách</strong><span>Hệ thống chưa có sách nào.</span></div></c:when>
+            <c:otherwise>
+                <div class="table-wrap"><table><thead><tr><th>Sách</th><th>Tác giả</th><th>Danh mục</th><th>Bản in</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+                <c:forEach var="book" items="${recentBooks}" begin="0" end="4">
+                    <tr><td><strong>${book.title}</strong><br><small>${book.publisher}</small></td><td>${book.author}</td><td>${book.categoryName}</td><td>${book.availableCopies}/${book.totalCopies}</td><td>${book.status}</td><td><a class="link-arrow" href="${pageContext.request.contextPath}/books/detail?id=${book.bookId}">Xem →</a></td></tr>
+                </c:forEach>
+                </tbody></table></div>
+            </c:otherwise>
+        </c:choose>
     </section>
 
     <div class="dashboard-columns">
@@ -97,7 +121,7 @@
                                 <div class="activity-icon">${item.actionType == 'DOWNLOAD' ? '⬇️' : item.actionType == 'VIEW' ? '👁️' : item.actionType == 'LOGIN' ? '🔑' : '🚪'}</div>
                                 <div class="activity-content">
                                     <strong>${item.actionType}</strong>
-                                    <span>${empty item.documentTitle ? 'Phiên đăng nhập' : item.documentTitle}</span>
+                                    <span>${not empty item.documentTitle ? item.documentTitle : not empty item.videoTitle ? item.videoTitle : not empty item.bookTitle ? item.bookTitle : 'Phiên đăng nhập'}</span>
                                     <small>${item.username} · ${item.accessTime}</small>
                                 </div>
                             </div>
