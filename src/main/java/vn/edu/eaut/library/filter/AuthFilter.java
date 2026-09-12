@@ -12,9 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.eaut.library.model.User;
+import vn.edu.eaut.library.dao.AdminSettingsDAO;
 
 @WebFilter("/*")
 public class AuthFilter implements Filter {
+    private final AdminSettingsDAO settingsDAO = new AdminSettingsDAO();
 
     private static final String[] PUBLIC_PATHS = {
             "/login", "/css/", "/js/", "/views/login.jsp", "/views/errors/"
@@ -22,7 +24,7 @@ public class AuthFilter implements Filter {
 
     private static final String[] STAFF_ONLY_PATHS = {
             "/license", "/permission", "/categories", "/video-license",
-            "/video-permission", "/book-license", "/book-permission"
+            "/video-permission", "/book-license", "/book-permission", "/audit-logs"
     };
 
     private static final String[] ADMIN_ONLY_PATHS = {
@@ -31,12 +33,12 @@ public class AuthFilter implements Filter {
 
     // ADMIN có khu vực riêng; không được đi vào giao diện nghiệp vụ của Reader/Librarian.
     private static final String[] ADMIN_BLOCKED_PATHS = {
-            "/home", "/documents", "/videos", "/books", "/favorites", "/history",
+            "/home", "/users", "/documents", "/videos", "/books", "/favorites", "/history",
             "/notifications", "/permission-request", "/video-permission-request",
             "/book-permission-requests", "/upload", "/download", "/video-download",
             "/book-download", "/document-preview", "/video-stream", "/book-preview",
             "/license", "/permission", "/categories", "/video-license",
-            "/video-permission", "/book-license", "/book-permission"
+            "/video-permission", "/book-license", "/book-permission", "/audit-logs"
     };
 
     @Override public void init(FilterConfig filterConfig) {}
@@ -60,6 +62,11 @@ public class AuthFilter implements Filter {
             response.sendRedirect(contextPath + "/login");
             return;
         }
+        try {
+            String timeout = settingsDAO.findAll().get("sessionTimeout");
+            int minutes = timeout == null ? 30 : Math.max(5, Integer.parseInt(timeout));
+            if (session != null) session.setMaxInactiveInterval(minutes * 60);
+        } catch (Exception ignored) {}
 
         if (currentUser.isAdmin() && isAdminBlockedPath(path)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN,
