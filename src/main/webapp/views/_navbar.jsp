@@ -33,6 +33,7 @@
             <span class="nav-group-label">Nội dung</span>
             <a class="nav-link ${fn:contains(navUri,'/documents') ? 'active' : ''}" href="${pageContext.request.contextPath}/documents"><span class="nav-icon">📄</span><span>Tài liệu</span></a>
             <a class="nav-link ${fn:contains(navUri,'/videos') ? 'active' : ''}" href="${pageContext.request.contextPath}/videos"><span class="nav-icon">🎬</span><span>Video</span></a>
+            <a class="nav-link ${fn:contains(navUri,'/books') ? 'active' : ''}" href="${pageContext.request.contextPath}/books"><span class="nav-icon">📚</span><span>Sách</span></a>
         </div>
 
         <c:if test="${sessionScope.currentUser.role == 'ADMIN' or sessionScope.currentUser.role == 'LIBRARIAN'}">
