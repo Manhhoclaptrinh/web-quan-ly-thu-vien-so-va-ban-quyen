@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import vn.edu.eaut.library.dao.HistoryDAO;
+import vn.edu.eaut.library.dao.AuditLogDAO;
 import vn.edu.eaut.library.dao.UserDAO;
 import vn.edu.eaut.library.model.AccessHistory;
 import vn.edu.eaut.library.model.User;
@@ -16,6 +17,7 @@ public class LoginServlet extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
     private final HistoryDAO historyDAO = new HistoryDAO();
+    private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -44,12 +46,14 @@ public class LoginServlet extends HttpServlet {
         User user = userDAO.findByUsername(username.trim());
 
         if (user == null || !PasswordUtil.matches(password, user.getPassword())) {
+            if(user!=null) safeAudit(user.getUserId(),"LOGIN_FAILED","Đăng nhập thất bại",req);
             req.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng.");
             req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
             return;
         }
 
         if ("LOCKED".equalsIgnoreCase(user.getStatus())) {
+            safeAudit(user.getUserId(),"LOGIN_BLOCKED","Tài khoản đang bị khóa nhưng có yêu cầu đăng nhập",req);
             req.setAttribute("error", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
             req.getRequestDispatcher("/views/login.jsp").forward(req, resp);
             return;
@@ -71,11 +75,9 @@ public class LoginServlet extends HttpServlet {
     }
 
     private void safeLog(AccessHistory history) {
-        try {
-            historyDAO.insert(history);
-        } catch (Exception e) {
-            // Không để lỗi ghi log ảnh hưởng luồng đăng nhập chính
-            e.printStackTrace();
-        }
+        try { historyDAO.insert(history); } catch (Exception e) { e.printStackTrace(); }
+    }
+    private void safeAudit(int userId,String action,String description,HttpServletRequest req){
+        try{auditLogDAO.insert(userId,action,"AUTH",null,description,req.getRemoteAddr());}catch(Exception ignored){}
     }
 }
