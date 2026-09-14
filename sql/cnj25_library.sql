@@ -1,8 +1,4 @@
--- =====================================================
--- cnj25_library - SQL hoàn chỉnh đã gộp
--- Giữ nguyên cấu trúc và dữ liệu từ file nguồn
--- Các ALTER TABLE đã được tích hợp vào CREATE TABLE
--- =====================================================
+
 
 DROP DATABASE IF EXISTS `cnj25_library`;
 CREATE DATABASE `cnj25_library` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
