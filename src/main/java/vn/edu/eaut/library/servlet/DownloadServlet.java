@@ -9,9 +9,13 @@ import jakarta.servlet.http.HttpSession;
 import vn.edu.eaut.library.dao.DocumentDAO;
 import vn.edu.eaut.library.dao.HistoryDAO;
 import vn.edu.eaut.library.dao.LicenseDAO;
+import vn.edu.eaut.library.dao.MembershipDAO;
 import vn.edu.eaut.library.dao.PermissionDAO;
+import vn.edu.eaut.library.dao.TransactionDAO;
+import vn.edu.eaut.library.dao.UserDAO;
 import vn.edu.eaut.library.model.AccessHistory;
 import vn.edu.eaut.library.model.Document;
+import vn.edu.eaut.library.model.Transaction;
 import vn.edu.eaut.library.model.User;
 
 import java.io.IOException;
@@ -27,6 +31,11 @@ public class DownloadServlet extends HttpServlet {
     private final PermissionDAO permissionDAO = new PermissionDAO();
     private final HistoryDAO historyDAO = new HistoryDAO();
     private final LicenseDAO licenseDAO = new LicenseDAO();
+    private final MembershipDAO membershipDAO = new MembershipDAO();
+    private final UserDAO userDAO = new UserDAO();
+    private final TransactionDAO transactionDAO = new TransactionDAO();
+
+    private static final long DOWNLOAD_PRICE = 50_000L; // phí tải xuống (không phải hội viên)
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -73,6 +82,26 @@ public class DownloadServlet extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN,
                         "Bạn chưa được cấp quyền tải tài liệu này.");
                 return;
+            }
+        }
+
+        // ===== Thu phí tải xuống: 50.000đ/lượt, hội viên tải thoải mái, ADMIN/LIBRARIAN miễn phí =====
+        if (!staff) {
+            boolean isMember = membershipDAO.isActiveMember(user.getUserId());
+            if (!isMember) {
+                boolean charged = userDAO.chargeWallet(user.getUserId(), DOWNLOAD_PRICE);
+                if (!charged) {
+                    resp.sendRedirect(req.getContextPath()
+                            + "/documents/detail?id=" + id + "&error=insufficient-balance-download");
+                    return;
+                }
+                Transaction t = new Transaction();
+                t.setUserId(user.getUserId());
+                t.setType("DOWNLOAD");
+                t.setAmount(-DOWNLOAD_PRICE);
+                t.setDescription("Tải xuống tài liệu #" + id);
+                transactionDAO.insert(t);
+                user.setWalletBalance(userDAO.getWalletBalance(user.getUserId()));
             }
         }
 

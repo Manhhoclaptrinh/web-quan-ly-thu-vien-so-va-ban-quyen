@@ -8,8 +8,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import vn.edu.eaut.library.dao.DocumentDAO;
 import vn.edu.eaut.library.dao.LicenseDAO;
+import vn.edu.eaut.library.dao.MembershipDAO;
 import vn.edu.eaut.library.dao.PermissionDAO;
+import vn.edu.eaut.library.dao.TransactionDAO;
+import vn.edu.eaut.library.dao.UserDAO;
 import vn.edu.eaut.library.model.Document;
+import vn.edu.eaut.library.model.Transaction;
 import vn.edu.eaut.library.model.User;
 
 import java.io.IOException;
@@ -24,6 +28,12 @@ public class DocumentPreviewServlet extends HttpServlet {
     private final DocumentDAO documentDAO = new DocumentDAO();
     private final PermissionDAO permissionDAO = new PermissionDAO();
     private final LicenseDAO licenseDAO = new LicenseDAO();
+    private final MembershipDAO membershipDAO = new MembershipDAO();
+    private final UserDAO userDAO = new UserDAO();
+    private final TransactionDAO transactionDAO = new TransactionDAO();
+
+    private static final long VIEW_PRICE = 500L;               // phí xem PDF (không phải hội viên)
+    private static final long VIEW_SESSION_MS = 60L * 60 * 1000; // 1 giờ / lượt trả phí
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -93,6 +103,32 @@ public class DocumentPreviewServlet extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
                     "Chỉ hỗ trợ xem trước file PDF.");
             return;
+        }
+
+        // ===== Thu phí xem PDF: 500đ/giờ, hội viên xem thoải mái, ADMIN/LIBRARIAN miễn phí =====
+        if (!staff) {
+            boolean isMember = membershipDAO.isActiveMember(user.getUserId());
+            if (!isMember) {
+                String sessionKey = "pdfPaidUntil_" + id;
+                Long paidUntil = (Long) session.getAttribute(sessionKey);
+                long now = System.currentTimeMillis();
+                if (paidUntil == null || now > paidUntil) {
+                    boolean charged = userDAO.chargeWallet(user.getUserId(), VIEW_PRICE);
+                    if (!charged) {
+                        resp.sendRedirect(req.getContextPath()
+                                + "/documents/detail?id=" + id + "&error=insufficient-balance-view");
+                        return;
+                    }
+                    Transaction t = new Transaction();
+                    t.setUserId(user.getUserId());
+                    t.setType("VIEW_PDF");
+                    t.setAmount(-VIEW_PRICE);
+                    t.setDescription("Xem PDF tài liệu #" + id + " (1 giờ)");
+                    transactionDAO.insert(t);
+                    session.setAttribute(sessionKey, now + VIEW_SESSION_MS);
+                    user.setWalletBalance(userDAO.getWalletBalance(user.getUserId()));
+                }
+            }
         }
 
         ServletContext context = getServletContext();
