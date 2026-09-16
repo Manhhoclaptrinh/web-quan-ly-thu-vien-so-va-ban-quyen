@@ -20,12 +20,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (toRegisterMobile) toRegisterMobile.addEventListener('click', showRegister);
     if (toLoginMobile) toLoginMobile.addEventListener('click', showLogin);
 
-    // Form Register chỉ mang tính giao diện: tài khoản do quản trị viên tạo (xem UserServlet)
-    if (registerForm) {
-        registerForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            alert('Tài khoản trong hệ thống do quản trị viên cấp.\nVui lòng liên hệ quản trị viên để được tạo tài khoản.');
-        });
+    // Nếu server trả về lỗi đăng ký, mở sẵn tab Register để người dùng thấy lỗi và sửa lại
+    var hasRegisterError = document.querySelector('.register-container .alert-error');
+    if (hasRegisterError) {
+        showRegister();
     }
 
     // Nếu server trả về lỗi đăng nhập (${error}), luôn mở sẵn tab Login
