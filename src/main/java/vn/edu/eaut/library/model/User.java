@@ -13,6 +13,7 @@ public class User implements Serializable {
     private String role;      // ADMIN, LIBRARIAN, AUDITOR, READER
     private String status;    // ACTIVE, LOCKED
     private LocalDateTime createdAt;
+    private long walletBalance; // số dư ví điện tử (đơn vị: đồng)
 
     public User() {
     }
@@ -103,6 +104,14 @@ public class User implements Serializable {
 
     public boolean isAuditor() {
         return "AUDITOR".equalsIgnoreCase(role);
+    }
+
+    public long getWalletBalance() {
+        return walletBalance;
+    }
+
+    public void setWalletBalance(long walletBalance) {
+        this.walletBalance = walletBalance;
     }
 
     @Override
