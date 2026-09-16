@@ -42,7 +42,56 @@ CREATE TABLE documents (
     CONSTRAINT fk_doc_uploader FOREIGN KEY (uploaded_by) REFERENCES users(user_id)
         ON DELETE SET NULL
 );
+-- Bảng sách
+CREATE TABLE IF NOT EXISTS books (
+    book_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(150),
+    category_id INT,
+    description TEXT,
+    cover_image VARCHAR(255),
+    published_date DATE,
+    status ENUM('AVAILABLE','DISABLED') NOT NULL DEFAULT 'AVAILABLE',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
+    CONSTRAINT fk_books_category
+        FOREIGN KEY (category_id)
+        REFERENCES categories(category_id)
+        ON DELETE SET NULL
+);
+CREATE TABLE IF NOT EXISTS book_licenses (
+    license_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    license_type ENUM('FREE','SUBSCRIPTION','PAID','INTERNAL')
+        NOT NULL DEFAULT 'FREE',
+    license_code VARCHAR(100),
+    issued_date DATE,
+    expiry_date DATE,
+    terms TEXT,
+    status ENUM('VALID','EXPIRED','REVOKED')
+        NOT NULL DEFAULT 'VALID',
+
+    CONSTRAINT fk_book_license_book
+        FOREIGN KEY (book_id)
+        REFERENCES books(book_id)
+        ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS book_permissions (
+    permission_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    user_id INT NOT NULL,
+    permission_type ENUM('READ', 'DOWNLOAD', 'BORROW')
+        NOT NULL DEFAULT 'READ',
+    granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expiry_date DATE,
+    status ENUM('ACTIVE', 'EXPIRED', 'REVOKED')
+        NOT NULL DEFAULT 'ACTIVE',
+
+    CONSTRAINT fk_permission_book
+        FOREIGN KEY (book_id)
+        REFERENCES books(book_id)
+        ON DELETE CASCADE
+);
 -- ==================== videos ====================
 CREATE TABLE videos (
     video_id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -261,6 +310,33 @@ CREATE TABLE video_reviews (
     INDEX idx_vreview_video (video_id)
 );
 
+-- 1) Thêm cột số dư ví cho user (mặc định 0đ, không ảnh hưởng dữ liệu cũ)
+ALTER TABLE users ADD COLUMN wallet_balance BIGINT NOT NULL DEFAULT 0;
+
+-- 2) Lịch sử giao dịch: nạp ví, đăng ký hội viên, phí xem PDF, phí tải xuống
+CREATE TABLE transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id        INT NOT NULL,
+    type           ENUM('TOPUP','MEMBERSHIP_MONTHLY','MEMBERSHIP_YEARLY','VIEW_PDF','DOWNLOAD') NOT NULL,
+    amount         BIGINT NOT NULL,       -- dương = cộng tiền (nạp ví), âm = trừ tiền (phí)
+    description    VARCHAR(255),
+    created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- 3) Lịch sử đăng ký hội viên (mỗi lần đăng ký/gia hạn là 1 dòng)
+CREATE TABLE memberships (
+    membership_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id       INT NOT NULL,
+    plan_type     ENUM('MONTHLY','YEARLY') NOT NULL,
+    price         BIGINT NOT NULL,
+    start_date    DATETIME NOT NULL,
+    end_date      DATETIME NOT NULL,
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+
 -- =====================================================
 -- DỮ LIỆU
 -- =====================================================
@@ -307,4 +383,51 @@ INSERT INTO video_licenses (video_id, license_type, license_code, issued_date, e
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Hoàn tất.
+INSERT INTO books
+(title, author, description, status)
+VALUES
+('Lập trình Java cơ bản', 'Nguyễn Văn A',
+ 'Sách hướng dẫn lập trình Java cơ bản',
+ 'AVAILABLE');
+
+INSERT INTO book_licenses
+(book_id, license_type, license_code, issued_date, expiry_date, terms, status)
+VALUES
+(1, 'PAID', 'JAVA-001',
+ CURDATE(),
+ DATE_ADD(CURDATE(), INTERVAL 1 YEAR),
+ 'Bản quyền sử dụng sách',
+ 'VALID');
+
+ ALTER TABLE access_history
+ADD COLUMN book_id INT NULL;
+
+ALTER TABLE access_history
+ADD CONSTRAINT fk_access_history_book
+FOREIGN KEY (book_id)
+REFERENCES books(book_id)
+ON DELETE SET NULL;
+
+ALTER TABLE books
+ADD COLUMN uploaded_by INT NULL;
+
+ALTER TABLE books
+ADD COLUMN upload_date DATETIME NULL;
+
+ALTER TABLE books
+    ADD COLUMN file_path VARCHAR(500) NULL,
+    ADD COLUMN isbn VARCHAR(50) NULL,
+    ADD COLUMN publisher VARCHAR(255) NULL,
+    ADD COLUMN publish_year INT NULL,
+    ADD COLUMN total_copies INT NOT NULL DEFAULT 1,
+    ADD COLUMN available_copies INT NOT NULL DEFAULT 1,
+    ADD COLUMN access_level VARCHAR(20) NOT NULL DEFAULT 'PUBLIC';
+
+ALTER TABLE favorites
+ADD COLUMN book_id INT NULL;
+
+ALTER TABLE favorites
+ADD CONSTRAINT fk_favorites_book
+FOREIGN KEY (book_id)
+REFERENCES books(book_id)
+ON DELETE CASCADE;
