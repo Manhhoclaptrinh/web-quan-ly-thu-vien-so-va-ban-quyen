@@ -143,6 +143,16 @@ body {
     margin-bottom: 14px;
 }
 
+.alert-success {
+    background: #e6f7ed;
+    color: #1e7e42;
+    border: 1px solid #b7e4c7;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 14px;
+}
+
 /* ===== Overlay (teal curved sliding panel) ===== */
 .overlay-container {
     position: absolute;
