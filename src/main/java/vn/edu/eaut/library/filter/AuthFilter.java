@@ -19,12 +19,13 @@ public class AuthFilter implements Filter {
     private final AdminSettingsDAO settingsDAO = new AdminSettingsDAO();
 
     private static final String[] PUBLIC_PATHS = {
-            "/login", "/css/", "/js/", "/views/login.jsp", "/views/errors/"
+            "/login", "/register", "/css/", "/js/", "/views/login.jsp", "/views/errors/"
     };
 
     private static final String[] STAFF_ONLY_PATHS = {
             "/license", "/permission", "/categories", "/video-license",
-            "/video-permission", "/book-license", "/book-permission", "/audit-logs"
+            "/video-permission", "/book-license", "/book-permission", "/audit-logs",
+            "/transaction-history", "/membership-history"
     };
 
     private static final String[] ADMIN_ONLY_PATHS = {
@@ -38,7 +39,8 @@ public class AuthFilter implements Filter {
             "/book-permission-requests", "/upload", "/download", "/video-download",
             "/book-download", "/document-preview", "/video-stream", "/book-preview",
             "/license", "/permission", "/categories", "/video-license",
-            "/video-permission", "/book-license", "/book-permission", "/audit-logs"
+            "/video-permission", "/book-license", "/book-permission", "/audit-logs",
+            "/wallet", "/membership"
     };
 
     @Override public void init(FilterConfig filterConfig) {}
