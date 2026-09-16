@@ -1,0 +1,123 @@
+/* CSS riêng cho Ví điện tử / Hội viên / Lịch sử giao dịch - không đụng style.css chung */
+
+.wallet-balance-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #0f6f6f, #17c3c3);
+    color: #fff;
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+.wallet-balance-box span {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.wallet-balance-box strong {
+    font-size: 26px;
+}
+
+.topup-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.topup-custom-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.topup-custom-form .form-group {
+    flex: 1;
+    min-width: 220px;
+    margin-bottom: 0;
+}
+
+.amount-positive {
+    color: #1e7e42;
+    font-weight: 600;
+}
+
+.amount-negative {
+    color: #b3261e;
+    font-weight: 600;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.search-form .form-control {
+    flex: 1;
+    min-width: 220px;
+}
+
+/* ===== Gói hội viên ===== */
+.membership-plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.plan-card {
+    text-align: center;
+    position: relative;
+    border: 1px solid #e2e8f0;
+}
+
+.plan-card-featured {
+    border: 2px solid #17c3c3;
+}
+
+.plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #17c3c3;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 999px;
+}
+
+.plan-price {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0f6f6f;
+    margin: 14px 0;
+}
+
+.plan-price span {
+    font-size: 14px;
+    font-weight: 400;
+    color: #64748b;
+}
+
+.plan-features {
+    list-style: none;
+    text-align: left;
+    margin: 0 0 20px;
+    padding: 0;
+}
+
+.plan-features li {
+    padding: 6px 0;
+    font-size: 14px;
+    color: #334155;
+}
+
+.btn-block {
+    width: 100%;
+}
