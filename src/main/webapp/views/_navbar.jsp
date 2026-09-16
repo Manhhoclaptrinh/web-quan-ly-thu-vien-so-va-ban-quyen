@@ -50,6 +50,8 @@
             <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
                 <a class="nav-link ${fn:contains(navUri,'/audit-logs') ? 'active' : ''}" href="${pageContext.request.contextPath}/audit-logs"><span class="nav-icon">📝</span><span>Audit</span></a>
             </c:if>
+            <a class="nav-link ${fn:contains(navUri,'/transaction-history') ? 'active' : ''}" href="${pageContext.request.contextPath}/transaction-history"><span class="nav-icon">💳</span><span>Lịch sử giao dịch</span></a>
+            <a class="nav-link ${fn:contains(navUri,'/membership-history') ? 'active' : ''}" href="${pageContext.request.contextPath}/membership-history"><span class="nav-icon">🏷️</span><span>Lịch sử hội viên</span></a>
         </div>
         </c:if>
 
@@ -59,6 +61,10 @@
             <a class="nav-link ${fn:contains(navUri,'/favorites') ? 'active' : ''}" href="${pageContext.request.contextPath}/favorites"><span class="nav-icon">⭐</span><span>Yêu thích</span></a>
             <a class="nav-link ${fn:contains(navUri,'/notifications') ? 'active' : ''}" href="${pageContext.request.contextPath}/notifications"><span class="nav-icon">🔔</span><span>Thông báo</span><c:if test="${unreadNotifications > 0}"><span class="nav-badge">${unreadNotifications}</span></c:if></a>
             <a class="nav-link ${fn:contains(navUri,'/profile') ? 'active' : ''}" href="${pageContext.request.contextPath}/profile"><span class="nav-icon">👤</span><span>Hồ sơ</span></a>
+            <c:if test="${sessionScope.currentUser.role == 'READER'}">
+            <a class="nav-link ${fn:contains(navUri,'/wallet') ? 'active' : ''}" href="${pageContext.request.contextPath}/wallet"><span class="nav-icon">💰</span><span>Ví của tôi</span></a>
+            <a class="nav-link ${fn:contains(navUri,'/membership') ? 'active' : ''}" href="${pageContext.request.contextPath}/membership"><span class="nav-icon">🏷️</span><span>Hội viên</span></a>
+            </c:if>
             <a class="nav-link ${fn:contains(navUri,'/permission-request') and not fn:contains(navUri,'/video-permission-request') ? 'active' : ''}" href="${pageContext.request.contextPath}/permission-request"><span class="nav-icon">📥</span><span>Yêu cầu quyền tài liệu</span></a>
             <a class="nav-link ${fn:contains(navUri,'/video-permission-request') ? 'active' : ''}" href="${pageContext.request.contextPath}/video-permission-request"><span class="nav-icon">📥</span><span>Yêu cầu quyền video</span></a>
         </div>

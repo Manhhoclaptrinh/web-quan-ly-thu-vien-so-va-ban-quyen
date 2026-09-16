@@ -13,24 +13,33 @@
 
 <div class="container" id="container">
 
-    <%-- ============ FORM ĐĂNG KÝ (chỉ giao diện - tài khoản do quản trị viên tạo, xem UserServlet/user-form.jsp) ============ --%>
+    <%-- ============ FORM ĐĂNG KÝ (tự do, không cần quản trị viên duyệt) ============ --%>
     <div class="form-container register-container">
-        <form id="registerForm" onsubmit="return false;">
+        <form action="${pageContext.request.contextPath}/register" method="post">
             <h1>Registration</h1>
+
+            <c:if test="${not empty registerError}">
+                <div class="alert-error">${registerError}</div>
+            </c:if>
+
             <div class="input-group">
-                <input type="text" placeholder="Username" required>
+                <input type="text" name="username" placeholder="Username" value="${oldUsername}" required>
                 <i class="fa-solid fa-user"></i>
             </div>
             <div class="input-group">
-                <input type="email" placeholder="Email" required>
+                <input type="text" name="fullName" placeholder="Họ và tên" value="${oldFullName}" required>
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+            <div class="input-group">
+                <input type="email" name="email" placeholder="Email" value="${oldEmail}" required>
                 <i class="fa-solid fa-envelope"></i>
             </div>
             <div class="input-group">
-                <input type="password" placeholder="Password" required>
+                <input type="password" name="password" placeholder="Password (tối thiểu 6 ký tự)" required minlength="6">
                 <i class="fa-solid fa-lock"></i>
             </div>
             <button type="submit" class="main-btn">Register</button>
-            <p class="note-text">Tài khoản trong hệ thống do quản trị viên cấp.<br>Vui lòng liên hệ quản trị viên để được tạo tài khoản.</p>
+            <p class="note-text">Đăng ký tự do, sử dụng ngay sau khi tạo tài khoản.</p>
             <p class="mobile-toggle" id="toLoginMobile">Đã có tài khoản? Đăng nhập</p>
         </form>
     </div>
@@ -42,6 +51,9 @@
 
             <c:if test="${not empty error}">
                 <div class="alert-error">${error}</div>
+            </c:if>
+            <c:if test="${param.registered == '1'}">
+                <div class="alert-success">Tạo tài khoản thành công! Hãy đăng nhập.</div>
             </c:if>
 
             <div class="input-group">

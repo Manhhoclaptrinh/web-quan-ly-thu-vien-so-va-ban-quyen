@@ -121,6 +121,15 @@
                     <c:if test="${param.error == 'no-view-permission'}">
                         <div class="alert alert-error">Bạn chưa có quyền VIEW tài liệu này. Hãy gửi yêu cầu cấp quyền.</div>
                     </c:if>
+                    <c:if test="${param.error == 'insufficient-balance-view'}">
+                        <div class="alert alert-error">Số dư ví không đủ để xem PDF (500đ/giờ). <a href="${pageContext.request.contextPath}/wallet">Nạp tiền vào ví</a> hoặc <a href="${pageContext.request.contextPath}/membership">đăng ký hội viên</a> để xem thoải mái.</div>
+                    </c:if>
+                    <c:if test="${param.error == 'insufficient-balance-download'}">
+                        <div class="alert alert-error">Số dư ví không đủ để tải xuống (50.000đ/lượt). <a href="${pageContext.request.contextPath}/wallet">Nạp tiền vào ví</a> hoặc <a href="${pageContext.request.contextPath}/membership">đăng ký hội viên</a> để tải thoải mái.</div>
+                    </c:if>
+                    <c:if test="${sessionScope.currentUser.role == 'READER'}">
+                        <p class="text-muted">💰 Số dư ví: <strong>${sessionScope.currentUser.walletBalance}đ</strong> · Xem PDF 500đ/giờ, tải xuống 50.000đ/lượt (miễn phí nếu là hội viên). <a href="${pageContext.request.contextPath}/wallet">Nạp ví</a> · <a href="${pageContext.request.contextPath}/membership">Đăng ký hội viên</a></p>
+                    </c:if>
                     <c:if test="${canView and fn:toLowerCase(document.filePath).endsWith('.pdf')}">
                         <a href="${pageContext.request.contextPath}/documents/preview?id=${document.documentId}" target="_blank" rel="noopener" class="btn btn-secondary">Xem PDF</a>
                     </c:if>
