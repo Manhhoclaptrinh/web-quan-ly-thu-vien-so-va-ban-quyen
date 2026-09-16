@@ -15,5 +15,11 @@ public class Favorite {
     public String getAuthor(){return author;} public void setAuthor(String v){author=v;}
     public LocalDateTime getCreatedAt(){return createdAt;} public void setCreatedAt(LocalDateTime v){createdAt=v;}
     public boolean isVideo(){return "VIDEO".equalsIgnoreCase(itemType);}
+    public boolean getIsVideo(){
+        return "VIDEO".equalsIgnoreCase(itemType);
+    }
     public boolean isBook(){return "BOOK".equalsIgnoreCase(itemType);}
+    public boolean getIsBook(){
+        return "BOOK".equalsIgnoreCase(itemType);
+    }
 }
