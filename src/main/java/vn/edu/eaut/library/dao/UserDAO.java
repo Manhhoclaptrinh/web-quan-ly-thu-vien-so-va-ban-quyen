@@ -161,6 +161,56 @@ public class UserDAO {
         if (ts != null) {
             u.setCreatedAt(ts.toLocalDateTime());
         }
+        try {
+            u.setWalletBalance(rs.getLong("wallet_balance"));
+        } catch (SQLException ignored) {
+            // Phòng trường hợp DB chưa chạy migration_wallet_membership.sql
+        }
         return u;
+    }
+
+    public long getWalletBalance(int userId) {
+        String sql = "SELECT wallet_balance FROM users WHERE user_id=?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getLong("wallet_balance");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi lấy số dư ví", e);
+        }
+        return 0;
+    }
+
+    /** Cộng tiền vào ví (nạp tiền). amount phải > 0. */
+    public boolean topUpWallet(int userId, long amount) {
+        String sql = "UPDATE users SET wallet_balance = wallet_balance + ? WHERE user_id=?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, amount);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi nạp tiền vào ví", e);
+        }
+    }
+
+    /**
+     * Trừ tiền trong ví (thu phí xem/tải). Chỉ trừ thành công nếu đủ số dư
+     * (kiểm tra ngay trong câu UPDATE để tránh trường hợp trừ âm khi có nhiều request cùng lúc).
+     * Trả về false nếu không đủ tiền.
+     */
+    public boolean chargeWallet(int userId, long amount) {
+        String sql = "UPDATE users SET wallet_balance = wallet_balance - ? WHERE user_id=? AND wallet_balance >= ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, amount);
+            ps.setInt(2, userId);
+            ps.setLong(3, amount);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi trừ tiền trong ví", e);
+        }
     }
 }
