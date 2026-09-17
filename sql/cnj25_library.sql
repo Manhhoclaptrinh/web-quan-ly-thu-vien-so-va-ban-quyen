@@ -435,3 +435,19 @@ ON DELETE CASCADE;
 // Cập nhật cột target_type trong bảng access_history để bao gồm cả BOOK
 ALTER TABLE access_history
     MODIFY COLUMN target_type ENUM('DOCUMENT','VIDEO','BOOK') NOT NULL DEFAULT 'DOCUMENT';
+
+// Cập nhật cột item_type trong bảng favorites để bao gồm cả BOOK
+CREATE INDEX idx_access_history_time
+    ON access_history(access_time);
+
+CREATE INDEX idx_access_history_action_time
+    ON access_history(action_type, access_time);
+
+CREATE INDEX idx_access_history_book_time
+    ON access_history(book_id, access_time);
+
+CREATE INDEX idx_transactions_created_at
+    ON transactions(created_at);
+
+CREATE INDEX idx_memberships_created_at
+    ON memberships(created_at);
