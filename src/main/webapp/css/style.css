@@ -661,3 +661,245 @@ table tr:hover {
     .monthly-report-grid{grid-template-columns:repeat(2,1fr)}
     .year-bar-item>small{font-size:7px}
 }
+
+/* Container tổng của trang báo cáo */
+.report-page,
+.reports-page,
+.librarian-reports {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Tất cả card báo cáo */
+.report-panel,
+.report-filter,
+.report-card,
+.card {
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.reports-grid,
+.report-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    box-sizing: border-box;
+}
+
+/* Nếu có grid 3 cột */
+.report-grid-3 {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+/* Card giao dịch không được phép tràn */
+.transactions-card,
+.report-transactions,
+.transaction-panel {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Các ô thống kê giao dịch */
+.transaction-stats,
+.transactions-stats,
+.transaction-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+/* Từng ô */
+.transaction-stat,
+.transaction-item,
+.transaction-box {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Không cho text làm vỡ layout */
+.transaction-stat *,
+.transaction-item *,
+.transaction-box * {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Số tiền */
+.transaction-stat strong,
+.transaction-item strong,
+.transaction-box strong {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.license-grid,
+.license-stats {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.license-item,
+.license-stat {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.license-expiring,
+.license-warning {
+    grid-column: 1 / -1;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.table-wrap table {
+    width: 100%;
+    min-width: 500px;
+    border-collapse: collapse;
+}
+
+.table-wrap th,
+.table-wrap td {
+    box-sizing: border-box;
+}
+
+.report-month-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.month-stat {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.report-filter {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.report-filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.report-filter-actions a {
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.section-heading {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.section-heading > * {
+    min-width: 0;
+}
+
+.section-heading h2 {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+
+    .reports-grid,
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .transaction-stats,
+    .transactions-stats,
+    .transaction-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .report-month-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+
+    .reports-grid,
+    .report-grid,
+    .report-grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .transaction-stats,
+    .transactions-stats,
+    .transaction-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .license-grid,
+    .license-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .report-month-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .report-filter-actions {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .report-month-grid {
+        grid-template-columns: 1fr;
+    }
+}
