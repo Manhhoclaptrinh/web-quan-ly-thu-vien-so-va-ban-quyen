@@ -39,6 +39,9 @@
         <c:if test="${sessionScope.currentUser.role == 'ADMIN' or sessionScope.currentUser.role == 'LIBRARIAN'}">
         <div class="nav-group">
             <span class="nav-group-label">Quản trị</span>
+            <c:if test="${sessionScope.currentUser.role == 'LIBRARIAN'}">
+                <a class="nav-link ${fn:contains(navUri,'/librarian/reports') ? 'active' : ''}" href="${pageContext.request.contextPath}/librarian/reports"><span class="nav-icon">📊</span><span>Báo cáo thống kê</span></a>
+            </c:if>
             <a class="nav-link ${fn:contains(navUri,'/categories') ? 'active' : ''}" href="${pageContext.request.contextPath}/categories"><span class="nav-icon">🗂️</span><span>Danh mục</span></a>
             <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
                 <a class="nav-link ${fn:contains(navUri,'/users') ? 'active' : ''}" href="${pageContext.request.contextPath}/users"><span class="nav-icon">👥</span><span>Người dùng</span></a>
