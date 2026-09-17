@@ -432,11 +432,11 @@ FOREIGN KEY (book_id)
 REFERENCES books(book_id)
 ON DELETE CASCADE;
 
-// Cập nhật cột target_type trong bảng access_history để bao gồm cả BOOK
+-- Cập nhật cột target_type trong bảng access_history để bao gồm cả BOOK
 ALTER TABLE access_history
     MODIFY COLUMN target_type ENUM('DOCUMENT','VIDEO','BOOK') NOT NULL DEFAULT 'DOCUMENT';
 
-// Cập nhật cột item_type trong bảng favorites để bao gồm cả BOOK
+-- Cập nhật cột item_type trong bảng favorites để bao gồm cả BOOK
 CREATE INDEX idx_access_history_time
     ON access_history(access_time);
 
