@@ -431,3 +431,7 @@ ADD CONSTRAINT fk_favorites_book
 FOREIGN KEY (book_id)
 REFERENCES books(book_id)
 ON DELETE CASCADE;
+
+// Cập nhật cột target_type trong bảng access_history để bao gồm cả BOOK
+ALTER TABLE access_history
+    MODIFY COLUMN target_type ENUM('DOCUMENT','VIDEO','BOOK') NOT NULL DEFAULT 'DOCUMENT';
