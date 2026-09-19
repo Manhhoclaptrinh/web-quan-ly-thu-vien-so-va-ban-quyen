@@ -41,10 +41,17 @@
                 <li>✔ Tải tài liệu không giới hạn</li>
                 <li>✔ Phù hợp dùng thử / ngắn hạn</li>
             </ul>
-            <form action="${pageContext.request.contextPath}/membership" method="post">
-                <input type="hidden" name="planType" value="MONTHLY">
+            <form action="${pageContext.request.contextPath}/payment/vnpay/create" method="post">
+                <input type="hidden" name="orderType" value="MEMBERSHIP_MONTHLY">
+                <input type="hidden" name="amount" value="${priceMonthly}">
                 <button type="submit" class="btn btn-primary btn-block">
-                    ${not empty activeMembership ? 'Gia hạn thêm 1 tháng' : 'Đăng ký gói Tháng'}
+                    💳 ${not empty activeMembership ? 'Gia hạn qua VNPay' : 'Đăng ký qua VNPay'}
+                </button>
+            </form>
+            <form action="${pageContext.request.contextPath}/membership" method="post" class="mt-3">
+                <input type="hidden" name="planType" value="MONTHLY">
+                <button type="submit" class="btn btn-secondary btn-block">
+                    🧪 ${not empty activeMembership ? 'Gia hạn (giả lập)' : 'Đăng ký (giả lập)'}
                 </button>
             </form>
         </div>
@@ -58,10 +65,17 @@
                 <li>✔ Tải tài liệu không giới hạn</li>
                 <li>✔ Chỉ ~41.700đ/tháng, rẻ hơn đăng ký tháng</li>
             </ul>
-            <form action="${pageContext.request.contextPath}/membership" method="post">
-                <input type="hidden" name="planType" value="YEARLY">
+            <form action="${pageContext.request.contextPath}/payment/vnpay/create" method="post">
+                <input type="hidden" name="orderType" value="MEMBERSHIP_YEARLY">
+                <input type="hidden" name="amount" value="${priceYearly}">
                 <button type="submit" class="btn btn-primary btn-block">
-                    ${not empty activeMembership ? 'Gia hạn thêm 1 năm' : 'Đăng ký gói Năm'}
+                    💳 ${not empty activeMembership ? 'Gia hạn qua VNPay' : 'Đăng ký qua VNPay'}
+                </button>
+            </form>
+            <form action="${pageContext.request.contextPath}/membership" method="post" class="mt-3">
+                <input type="hidden" name="planType" value="YEARLY">
+                <button type="submit" class="btn btn-secondary btn-block">
+                    🧪 ${not empty activeMembership ? 'Gia hạn (giả lập)' : 'Đăng ký (giả lập)'}
                 </button>
             </form>
         </div>
