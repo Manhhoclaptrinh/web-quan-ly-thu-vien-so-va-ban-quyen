@@ -336,6 +336,18 @@ CREATE TABLE memberships (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
+CREATE TABLE payment_orders (
+    order_id     INT AUTO_INCREMENT PRIMARY KEY,
+    txn_ref      VARCHAR(50) NOT NULL UNIQUE,   -- mã đơn hàng gửi sang VNPay (vnp_TxnRef)
+    user_id      INT NOT NULL,
+    order_type   ENUM('WALLET_TOPUP','MEMBERSHIP_MONTHLY','MEMBERSHIP_YEARLY') NOT NULL,
+    amount       BIGINT NOT NULL,               -- số tiền VND (chưa nhân 100)
+    status       ENUM('PENDING','SUCCESS','FAILED') NOT NULL DEFAULT 'PENDING',
+    vnp_transaction_no VARCHAR(50) NULL,        -- mã giao dịch phía VNPay, lưu lại để đối soát
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    paid_at      DATETIME NULL,
+    CONSTRAINT fk_porder_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
 
 -- =====================================================
 -- DỮ LIỆU
