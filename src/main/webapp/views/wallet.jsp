@@ -24,9 +24,33 @@
             <strong>${walletBalance}đ</strong>
         </div>
 
+        <h2 class="mt-3">💳 Nạp tiền qua VNPay </h2>
+        <p class="text-muted">Quét QR / thẻ ATM nội địa / thẻ quốc tế ngay trên trang VNPay.</p>
+        <form action="${pageContext.request.contextPath}/payment/vnpay/create" method="post">
+            <input type="hidden" name="orderType" value="WALLET_TOPUP">
+            <div class="form-group">
+                <div class="topup-presets">
+                    <button type="submit" name="amount" value="50000" class="btn btn-primary">50.000đ</button>
+                    <button type="submit" name="amount" value="100000" class="btn btn-primary">100.000đ</button>
+                    <button type="submit" name="amount" value="200000" class="btn btn-primary">200.000đ</button>
+                    <button type="submit" name="amount" value="500000" class="btn btn-primary">500.000đ</button>
+                </div>
+            </div>
+        </form>
+        <form action="${pageContext.request.contextPath}/payment/vnpay/create" method="post" class="mt-3 topup-custom-form">
+            <input type="hidden" name="orderType" value="WALLET_TOPUP">
+            <div class="form-group">
+                <label>Hoặc nhập số tiền khác (đ)</label>
+                <input type="number" name="amount" class="form-control" min="1000" step="1000" placeholder="Ví dụ: 150000" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Thanh toán qua VNPay</button>
+        </form>
+
+        <hr class="mt-3" style="border:none;border-top:1px dashed #cbd5e1;">
+
+        <h2 class="mt-3">🧪 Nạp giả lập </h2>
         <form action="${pageContext.request.contextPath}/wallet" method="post" class="mt-3">
             <div class="form-group">
-                <label>Chọn nhanh mức nạp</label>
                 <div class="topup-presets">
                     <button type="submit" name="amount" value="50000" class="btn btn-secondary">50.000đ</button>
                     <button type="submit" name="amount" value="100000" class="btn btn-secondary">100.000đ</button>
@@ -40,7 +64,7 @@
                 <label>Hoặc nhập số tiền khác (đ)</label>
                 <input type="number" name="amount" class="form-control" min="1000" step="1000" placeholder="Ví dụ: 150000" required>
             </div>
-            <button type="submit" class="btn btn-primary">Nạp tiền (giả lập thanh toán)</button>
+            <button type="submit" class="btn btn-secondary">Nạp tiền </button>
         </form>
     </div>
 
