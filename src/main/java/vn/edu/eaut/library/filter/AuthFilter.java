@@ -40,7 +40,7 @@ public class AuthFilter implements Filter {
             "/book-download", "/document-preview", "/video-stream", "/book-preview",
             "/license", "/permission", "/categories", "/video-license",
             "/video-permission", "/book-license", "/book-permission", "/audit-logs",
-            "/wallet", "/membership"
+            "/wallet", "/membership", "/payment"
     };
 
     @Override public void init(FilterConfig filterConfig) {}
